@@ -3,8 +3,8 @@
 # Fill BUCKET + DIST_ID (env or edit) after the infra exists.
 set -euo pipefail
 
-BUCKET="${BUCKET:-FILL_ME}"          # e.g. heyari-dev-static
-DIST_ID="${DIST_ID:-FILL_ME}"        # CloudFront distribution id
+BUCKET="${BUCKET:-heyari-dev-static}"        # S3 bucket (eu-west-2)
+DIST_ID="${DIST_ID:-E3DZC8ECXAT4FZ}"         # CloudFront distribution id
 REGION="eu-west-2"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
