@@ -1,0 +1,20 @@
+---
+import black from '../assets/friendly/badge-black.svg';
+import white from '../assets/friendly/badge-white.svg';
+---
+<a class="friendly" href="https://friendlymanifesto.org" rel="noopener" target="_blank"
+   title="Ari conforms to the Friendly Manifesto">
+  <img class="on-light" src={black.src} width="132" alt="Conforms to the Friendly Manifesto" />
+  <img class="on-dark"  src={white.src} width="132" alt="" aria-hidden="true" />
+</a>
+<style>
+  .friendly{display:inline-block;opacity:.85;transition:opacity .2s}
+  .friendly:hover{opacity:1}
+  .friendly .on-dark{display:none}
+  :root[data-theme="dark"] .friendly .on-light{display:none}
+  :root[data-theme="dark"] .friendly .on-dark{display:inline-block}
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]) .friendly .on-light{display:none}
+    :root:not([data-theme="light"]) .friendly .on-dark{display:inline-block}
+  }
+</style>
