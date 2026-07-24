@@ -1,7 +1,8 @@
 # ari-web
 
-Static hosting for **heyari.dev** — the marketing site, the skills browser, the
-docs, and the preserved Ari OAuth / Android App-Link surface.
+Static hosting for **heyari.dev** — the marketing site and the preserved Ari
+OAuth / Android App-Link surface today, with the skills browser and
+documentation arriving in later phases.
 
 ## Layout
 - `site/` — Astro marketing site. Its `public/` carries the preserved surface:
@@ -20,7 +21,7 @@ docs, and the preserved Ari OAuth / Android App-Link surface.
 ```bash
 npm install
 npm run dev        # Astro dev server
-npm test           # cf-rewrite + build assertions
+npm test           # cf-rewrite unit tests + build-output assertions
 ```
 
 ## Deploy
