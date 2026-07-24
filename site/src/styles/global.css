@@ -13,3 +13,15 @@ p{margin:0}
 @media (prefers-reduced-motion:reduce){*{animation:none !important; scroll-behavior:auto !important}}
 .wrap{max-width:1120px; margin:0 auto; padding:0 24px}
 .eyebrow{font-family:var(--mono); font-size:12px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--sun)}
+/* Shared buttons — ported verbatim from docs/design-reference/dusk-mockup.html.
+   Global (not scoped to Nav) so Hero and any future component reuse them. */
+.btn{
+  display:inline-flex; align-items:center; gap:9px; font-weight:700; font-size:15px;
+  padding:11px 18px; border-radius:12px; cursor:pointer; border:1px solid transparent;
+  transition:transform .15s ease, box-shadow .2s ease, background .2s;
+}
+.btn:active{transform:translateY(1px)}
+.btn-primary{color:#fff; background:var(--sun); box-shadow:0 10px 26px -12px var(--ring)}
+.btn-primary:hover{box-shadow:0 14px 34px -12px var(--ring)}
+.btn-ghost{background:var(--surface); border-color:var(--hair); color:var(--ink)}
+.btn-ghost:hover{border-color:var(--plum)}

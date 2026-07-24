@@ -1,0 +1,35 @@
+---
+import Logo from './Logo.astro';
+import ThemeToggle from './ThemeToggle.astro';
+---
+<header class="nav">
+  <div class="wrap nav-in">
+    <a class="brand" href="/"><Logo /><span>Ari</span></a>
+    <nav class="nav-links">
+      <a href="/features">Features</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/skills">Skills</a>
+      <a href="/docs">Docs</a>
+    </nav>
+    <div class="nav-cta">
+      <ThemeToggle />
+      <a class="btn btn-primary" href="https://github.com/ari-digital-assistant">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5l3.09 6.26L22 7.77l-5 4.87 1.18 6.88L12 16.27 5.82 19.52 7 12.64 2 7.77l6.91-1.01z"/></svg>
+        Star on GitHub
+      </a>
+    </div>
+  </div>
+</header>
+<style>
+  /* Nav-specific rules ported verbatim from docs/design-reference/dusk-mockup.html.
+     Shared button styles (.btn/.btn-primary/.btn-ghost) live in global.css so
+     other components (e.g. Hero) get them too. */
+  .nav{position:sticky; top:0; z-index:50; backdrop-filter:saturate(1.2) blur(14px); background:color-mix(in srgb, var(--bg) 78%, transparent); border-bottom:1px solid var(--hair)}
+  .nav-in{display:flex; align-items:center; gap:24px; height:64px}
+  .brand{display:flex; align-items:center; gap:11px; font-weight:800; letter-spacing:-.02em; font-size:19px}
+  .nav-links{display:flex; gap:26px; margin-left:auto; font-weight:500; font-size:15px; color:var(--muted)}
+  .nav-links a{transition:color .2s} .nav-links a:hover{color:var(--ink)}
+  .nav-cta{display:flex; align-items:center; gap:10px}
+  .nav-links a, .nav-cta .btn{white-space:nowrap}
+  @media (max-width:860px){.nav-links{display:none}}
+</style>

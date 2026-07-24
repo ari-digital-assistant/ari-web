@@ -1,0 +1,38 @@
+---
+import Logo from './Logo.astro';
+---
+<footer>
+  <div class="wrap foot-grid">
+    <div class="foot-brand">
+      <a class="brand" href="/"><Logo /><span>Ari</span></a>
+      <p>An open-source digital assistant that keeps your voice, your data and your home to yourself.</p>
+    </div>
+    <div class="foot-cols">
+      <div class="foot-col"><h4>Product</h4>
+        <a href="/features">Features</a><a href="/privacy">Privacy</a><a href="/skills">Skills</a>
+      </div>
+      <div class="foot-col"><h4>Docs</h4>
+        <a href="/docs">Using Ari</a><a href="/docs">Write a skill</a>
+      </div>
+      <div class="foot-col"><h4>Open source</h4>
+        <a href="https://github.com/ari-digital-assistant">GitHub org</a>
+        <a href="https://github.com/ari-digital-assistant/ari-skills">ari-skills</a>
+      </div>
+    </div>
+  </div>
+  <div class="wrap foot-legal"><span>MIT licensed · Made in the open</span><span>heyari.dev</span></div>
+</footer>
+<style>
+  /* .foot-* rules ported verbatim from docs/design-reference/dusk-mockup.html. */
+  footer{border-top:1px solid var(--hair); padding:48px 0 40px; color:var(--muted); margin-top:64px}
+  .foot-grid{display:flex; justify-content:space-between; gap:40px; flex-wrap:wrap}
+  .foot-brand{max-width:30ch}
+  .foot-brand .brand{color:var(--ink); margin-bottom:12px}
+  .foot-brand p{font-size:13.5px}
+  .foot-cols{display:flex; gap:56px; flex-wrap:wrap}
+  .foot-col h4{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--ink); margin:0 0 14px}
+  .foot-col a{display:block; font-size:14px; margin-bottom:9px; transition:color .15s}
+  .foot-col a:hover{color:var(--sun)}
+  .foot-legal{margin-top:36px; padding-top:22px; border-top:1px solid var(--hair); font-family:var(--mono); font-size:12px; display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap}
+  @media (max-width:560px){.foot-grid{gap:28px}}
+</style>
