@@ -1,0 +1,17 @@
+{
+  "name": "ari-web",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.12" },
+  "workspaces": ["site"],
+  "scripts": {
+    "dev": "npm run dev --workspace site",
+    "build": "npm run build --workspace site",
+    "assemble": "node scripts/assemble.mjs",
+    "test": "vitest run",
+    "audit": "npm audit --omit=dev --audit-level=high"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
+}
