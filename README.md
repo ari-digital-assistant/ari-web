@@ -1,31 +1,40 @@
 # ari-web
 
-Static hosting for `heyari.dev` — currently the Ari ↔ Home Assistant OAuth flow,
-and the home of the marketing site later.
+Static hosting for **heyari.dev** — the marketing site, the skills browser, the
+docs, and the preserved Ari OAuth / Android App-Link surface.
 
-## Contents
-- `oauth/ha/index.html` — IndieAuth **client_id** page (carries the
-  `<link rel="redirect_uri">` HA scans).
-- `oauth/ha/callback/index.html` — OAuth **redirect_uri** landing page (200;
-  intercepted by the verified Android App Link in practice).
-- `.well-known/assetlinks.json` — Android **Digital Asset Links** for App Link
-  verification (`dev.heyari.ari` + signing-cert SHA-256 fingerprints).
-- `cf-rewrite.js` — CloudFront viewer-request Function: appends `index.html`
-  to directory-style paths.
-- `deploy.sh` — `aws s3 sync` + CloudFront invalidation. Set `BUCKET`/`DIST_ID` first.
+## Layout
+- `site/` — Astro marketing site. Its `public/` carries the preserved surface:
+  - `public/oauth/client/index.html` — IndieAuth **client_id** page.
+  - `public/oauth/callback/index.html` — OAuth **redirect_uri** landing page
+    (intercepted by the verified Android App Link in practice).
+  - `public/.well-known/assetlinks.json` — Android **Digital Asset Links**
+    (`dev.heyari.ari` + signing-cert SHA-256 fingerprints).
+- `docs/` — VitePress documentation (added in a later phase).
+- `cf-rewrite.js` — CloudFront **Function**: appends `index.html` to directory
+  paths and routes `/skills/<id>` to the detail template.
+- `scripts/assemble.mjs` — merges build outputs into `dist/`.
+- `deploy.sh` — builds, assembles, `aws s3 sync`, CloudFront invalidation.
+
+## Develop
+```bash
+npm install
+npm run dev        # Astro dev server
+npm test           # cf-rewrite + build assertions
+```
 
 ## Deploy
 ```bash
-BUCKET=<bucket> DIST_ID=<distribution-id> ./deploy.sh
+BUCKET=heyari-dev-static DIST_ID=E3DZC8ECXAT4FZ ./deploy.sh
 ```
 
 ## Infra
-Private S3 (`eu-west-2`) → CloudFront (HTTPS, OAC) → apex `heyari.dev` via Route53;
-ACM cert in `us-east-1`. Design + runbook:
-`../docs/superpowers/specs/2026-06-15-heyari-dev-hosting-design.md` and the matching plan.
+Private S3 (`eu-west-2`) → CloudFront (HTTPS, OAC) → apex `heyari.dev` via
+Route53; ACM cert in `us-east-1`. Fully serverless (no Lambda). Design +
+runbook: `../docs/superpowers/specs/2026-07-24-heyari-dev-website-design.md`.
 
 ## Fingerprints (assetlinks.json)
-`sha256_cert_fingerprints` is an array — currently the **debug** key (local
-on-device testing). Append the **release** (self keystore or Google Play App
-Signing) and **F-Droid** fingerprints before those channels ship; a missing
-channel fingerprint silently breaks App Link verification for that channel.
+`sha256_cert_fingerprints` is an array — currently the **debug** key. Append the
+**release** (self keystore or Play App Signing) and **F-Droid** fingerprints
+before those channels ship; a missing channel fingerprint silently breaks App
+Link verification for that channel.
