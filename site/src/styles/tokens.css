@@ -1,0 +1,35 @@
+@font-face{
+  font-family:"Manrope";
+  src:url("../assets/manrope.woff2") format("woff2");
+  font-weight:200 800; font-style:normal; font-display:swap;
+}
+:root{
+  --mono: ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,"Liberation Mono",monospace;
+  --ember:#D01717; --flame:#F73E1E; --tangerine:#FD6A21; --amber:#FCA72E;
+  --sunset:linear-gradient(120deg,var(--ember),var(--flame) 42%,var(--tangerine) 72%,var(--amber));
+  --bg:#F2E7D4; --surface:#FBF4E7; --surface-2:#F6EBD8; --ink:#241521; --muted:#7A6768;
+  --hair:#E3D3BC; --plum:#5A2848; --plum-ink:#4A2340; --sun:#D8431C; --on-device:#B14A16;
+  --network:#8A5C74; --glow:rgba(247,62,30,.30); --glow-2:rgba(252,167,46,.22);
+  --shadow:0 1px 0 rgba(255,255,255,.5) inset,0 18px 40px -24px rgba(74,35,64,.45);
+  --ring:rgba(216,67,28,.55);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#150D14; --surface:#1E141D; --surface-2:#261A26; --ink:#F6EDE1; --muted:#AC969C;
+    --hair:#372536; --plum:#B979A0; --plum-ink:#2A1826; --sun:#FF6A38; --on-device:#FDBA6A;
+    --network:#C79ABA; --glow:rgba(247,62,30,.42); --glow-2:rgba(252,167,46,.28);
+    --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 24px 60px -28px rgba(0,0,0,.75); --ring:rgba(255,106,56,.6);
+  }
+}
+:root[data-theme="light"]{
+  --bg:#F2E7D4; --surface:#FBF4E7; --surface-2:#F6EBD8; --ink:#241521; --muted:#7A6768;
+  --hair:#E3D3BC; --plum:#5A2848; --plum-ink:#4A2340; --sun:#D8431C; --on-device:#B14A16;
+  --network:#8A5C74; --glow:rgba(247,62,30,.30); --glow-2:rgba(252,167,46,.22);
+  --shadow:0 1px 0 rgba(255,255,255,.5) inset,0 18px 40px -24px rgba(74,35,64,.45); --ring:rgba(216,67,28,.55);
+}
+:root[data-theme="dark"]{
+  --bg:#150D14; --surface:#1E141D; --surface-2:#261A26; --ink:#F6EDE1; --muted:#AC969C;
+  --hair:#372536; --plum:#B979A0; --plum-ink:#2A1826; --sun:#FF6A38; --on-device:#FDBA6A;
+  --network:#C79ABA; --glow:rgba(247,62,30,.42); --glow-2:rgba(252,167,46,.28);
+  --shadow:0 1px 0 rgba(255,255,255,.04) inset,0 24px 60px -28px rgba(0,0,0,.75); --ring:rgba(255,106,56,.6);
+}

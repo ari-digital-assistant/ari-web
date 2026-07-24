@@ -1,6 +1,7 @@
 node_modules/
 dist/
 site/dist/
+site/.astro/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
 .DS_Store
