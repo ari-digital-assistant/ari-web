@@ -105,6 +105,10 @@ import Base from '../../layouts/Base.astro';
   /* Error state — also runtime-injected (see the fetch().catch() below), so
      it has the same scoping problem and lives here too. */
   .fetch-error{color:var(--muted); font-size:14px; margin-top:16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+
+  /* Empty-state — also runtime-injected (see render() above), same scoping
+     problem, lives here too. */
+  .grid-empty{color:var(--muted); font-family:var(--mono); font-size:14px; padding:24px 4px}
 </style>
 <script>
   import { filterSkills, cardHtml } from '../../lib/skills.js';
@@ -116,7 +120,9 @@ import Base from '../../layouts/Base.astro';
 
   function render() {
     const rows = filterSkills(all, { type: filter, query: q.value });
-    grid.innerHTML = rows.map(cardHtml).join('');
+    grid.innerHTML = rows.length
+      ? rows.map(cardHtml).join('')
+      : '<p class="grid-empty">No skills match that.</p>';
     count.textContent = `${rows.length} of ${all.length} skills`;
   }
   document.getElementById('filters').addEventListener('click', (e) => {

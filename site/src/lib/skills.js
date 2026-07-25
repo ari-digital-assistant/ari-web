@@ -41,6 +41,9 @@ export const cardHtml = (s) => `<a class="card" href="/skills/${esc(s.id)}" data
   <div class="card-foot">${priv(s)}<span class="open">View →</span></div>
 </a>`;
 
+// NOTE: `v` is injected as raw HTML, not escaped — callers must pass
+// already-escaped/trusted content (e.g. esc(...) output or markup we built
+// ourselves), never a raw registry field.
 const fact = (k, v) => `<div class="fact"><span class="k">${esc(k)}</span><span class="v">${v}</span></div>`;
 
 export const detailHtml = (s) => {
@@ -48,7 +51,7 @@ export const detailHtml = (s) => {
   const banner = net
     ? '<div class="priv-banner net"><span class="dot"></span><div><div class="t">Uses the network</div><div class="s">This skill reaches the internet for some tasks — only when a request needs it.</div></div></div>'
     : '<div class="priv-banner local"><span class="dot"></span><div><div class="t">Runs entirely on your device</div><div class="s">Nothing this skill does needs the internet.</div></div></div>';
-  const home = s.homepage ? `<a href="${esc(s.homepage)}">GitHub ↗</a>` : '—';
+  const home = /^https?:\/\//i.test(s.homepage || '') ? `<a href="${esc(s.homepage)}">GitHub ↗</a>` : '—';
   return `<div class="d-hero">
     <div><h1>${esc(niceName(s.name))}</h1><div class="id">${esc(s.id)}</div>
       <div class="d-meta"><span class="badge ${esc(s.type)}">${esc(s.type)}</span><span class="ver">v${esc(s.version)}</span><span class="ver">${esc(s.author)}</span></div>

@@ -56,4 +56,14 @@ describe('detailHtml', () => {
   it('shows the on-device banner for local skills', () => {
     expect(detailHtml(coin)).toMatch(/runs entirely on your device/i);
   });
+  it('does not render a javascript: homepage as a link (unsigned registry field)', () => {
+    const evil = { ...weather, homepage: 'javascript:alert(1)' };
+    const h = detailHtml(evil);
+    expect(h).not.toContain('href="javascript:');
+    expect(h).toContain('<span class="v">—</span>');
+  });
+  it('still renders the GitHub link for a normal https homepage', () => {
+    const h = detailHtml(weather);
+    expect(h).toContain('<a href="https://github.com/ari-digital-assistant/ari-skills">GitHub ↗</a>');
+  });
 });
