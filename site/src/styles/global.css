@@ -25,3 +25,10 @@ p{margin:0}
 .btn-primary:hover{box-shadow:0 14px 34px -12px var(--ring)}
 .btn-ghost{background:var(--surface); border-color:var(--hair); color:var(--ink)}
 .btn-ghost:hover{border-color:var(--plum)}
+/* Section shell — ported verbatim from docs/design-reference/dusk-mockup.html.
+   The .sec-head block (eyebrow + h2 + p) is shared by every Phase 1 section
+   (Demo, Privacy, Features, GetAri), so it lives here rather than scoped. */
+section{padding:72px 0}
+.sec-head{max-width:52ch}
+.sec-head h2{font-size:clamp(28px,4vw,40px); line-height:1.08; margin-top:14px}
+.sec-head p{color:var(--muted); margin-top:14px; font-size:17px}
