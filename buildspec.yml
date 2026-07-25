@@ -1,0 +1,37 @@
+version: 0.2
+
+# AWS CodeBuild deploy pipeline for heyari.dev.
+#
+# Trigger: a push to `main` (via the CodeBuild GitHub webhook — see README/Infra).
+# AWS access comes from the CodeBuild project's IAM SERVICE ROLE — no stored keys,
+# no OIDC role, no AWS_DEPLOY_ROLE_ARN. The gate (audit + tests) runs BEFORE
+# deploy.sh touches S3, so a vulnerable dep or a failing test stops the deploy.
+#
+# The service role needs, at minimum:
+#   s3:PutObject, s3:DeleteObject, s3:ListBucket   on  heyari-dev-static (+ /*)
+#   cloudfront:CreateInvalidation                  on  the E3DZC8ECXAT4FZ distribution
+# Use a CodeBuild image with Node 22 (aws/codebuild/standard:7.0 or later).
+
+env:
+  variables:
+    BUCKET: heyari-dev-static
+    DIST_ID: E3DZC8ECXAT4FZ
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 22
+    commands:
+      - node --version
+      - npm ci
+  pre_build:
+    commands:
+      # Gate — must pass before anything is published.
+      - npm run audit          # fails on high+ vulnerabilities (--omit=dev)
+      - npm test               # site + docs + cf-rewrite + assemble suites
+  build:
+    commands:
+      # deploy.sh builds (site + docs), assembles dist/, syncs to S3 with the
+      # per-type cache headers + the assetlinks.json application/json override,
+      # then invalidates CloudFront. BUCKET/DIST_ID come from env above.
+      - ./deploy.sh

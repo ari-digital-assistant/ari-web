@@ -1,0 +1,23 @@
+name: ci
+# CI checks only. DEPLOY is handled by AWS CodeBuild (buildspec.yml) on push to main.
+# Runs on pull requests (fast, free feedback); main pushes deploy via CodeBuild,
+# whose buildspec runs the same audit + test gate before publishing.
+on:
+  pull_request: { branches: [main] }
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '22', cache: 'npm' }
+      - run: npm ci
+      - name: Audit (fail on high+ vulnerabilities)
+        run: npm run audit
+      - run: npm test
+      - run: npm run build
+      - run: npm run assemble
