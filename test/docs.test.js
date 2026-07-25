@@ -32,3 +32,16 @@ describe('user guide', () => {
     expect(h).toMatch(/no analytics|no telemetry/i);
   });
 });
+
+describe('develop section', () => {
+  it('overview covers the three skill kinds and links to ari-skills', () => {
+    const h = read('develop/index.html');
+    for (const kind of ['Declarative', 'WASM', 'Assistant']) expect(h).toContain(kind);
+    expect(h).toContain('ari-digital-assistant/ari-skills');
+  });
+  it('first-skill quickstart mentions SKILL.*.md and the post-normalised pattern rule', () => {
+    const h = read('develop/first-skill.html');
+    expect(h).toMatch(/SKILL\.\w+\.md|SKILL\.en\.md/);
+    expect(h).toMatch(/normalis|lowercase/i);
+  });
+});
