@@ -31,12 +31,12 @@ import Base from '../../layouts/Base.astro';
 <style>
   /* Scoped page styles, consistent with the Dusk system. Shared primitives
      (.wrap, .eyebrow, .sec-head, .btn/.btn-ghost) come from global.css and
-     are NOT redefined here. Everything below is ported verbatim from
-     docs/design-reference/dusk-mockup.html's #skills section, with one
-     deliberate adaptation: the mockup's card is an <article>, but cardHtml()
-     (src/lib/skills.js) renders a whole <a class="card"> block link, so
-     .card picks up text-decoration:none / color:inherit to neutralise link
-     styling while keeping the hover lift. */
+     are NOT redefined here. Only build-time shell elements are styled here —
+     the card grid itself is rendered at runtime (see the client <script>
+     below) and Astro's scoped CSS compiles to `.card[data-astro-cid-xxx]`,
+     which never matches elements injected after the fact via innerHTML.
+     Card/badge/priv/etc. styles therefore live in the `is:global` block
+     further down instead, so they actually apply to runtime-injected DOM. */
   .skills-page{padding-block:60px 96px}
   .skills-page .sec-head h1{font-size:clamp(30px,4.2vw,44px); line-height:1.06; margin-top:14px}
 
@@ -59,6 +59,25 @@ import Base from '../../layouts/Base.astro';
   .count{font-family:var(--mono); font-size:12.5px; color:var(--muted); margin-top:16px}
   .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(288px,1fr)); gap:16px; margin-top:16px}
 
+  /* Not in the mockup — a new state this page needs that the reference never
+     had to render (the mockup's grid was pre-seeded, never empty/erroring). */
+  .noscript{color:var(--muted); font-size:14px; margin-top:16px}
+  .noscript a{color:var(--sun); font-weight:500}
+  .noscript a:hover{text-decoration:underline; text-underline-offset:3px}
+</style>
+<style is:global>
+  /* Global (not scoped) on purpose: cardHtml() (src/lib/skills.js) injects
+     this markup into #grid at runtime via innerHTML, after Astro has already
+     stamped its scoped-CSS `data-astro-cid-*` attribute pass over the
+     build-time DOM. Runtime-injected elements never get that attribute, so
+     scoped `.card[data-astro-cid-xxx]` selectors would silently never match —
+     the cards would render but stay completely unstyled. These rules are
+     ported verbatim from docs/design-reference/dusk-mockup.html's #skills
+     section, with one deliberate adaptation: the mockup's card is an
+     <article>, but cardHtml() renders a whole <a class="card"> block link,
+     so .card picks up text-decoration:none / color:inherit to neutralise
+     link styling while keeping the hover lift. Generic names (.card, .cap,
+     .priv, .badge, ...) but unused elsewhere on the site, so no collision. */
   .card{
     background:var(--surface); border:1px solid var(--hair); border-radius:16px; padding:20px;
     display:flex; flex-direction:column; gap:12px; transition:transform .16s, border-color .16s, box-shadow .2s;
@@ -80,12 +99,11 @@ import Base from '../../layouts/Base.astro';
   .priv.local{color:var(--on-device)} .priv.local .dot{background:var(--on-device)}
   .priv.net{color:var(--network)} .priv.net .dot{background:var(--network)}
   .open{display:inline-flex; align-items:center; gap:6px; font-weight:700; font-size:13px; color:var(--sun); cursor:pointer}
+  .open svg{width:14px; height:14px; transition:transform .15s}
+  .open:hover svg{transform:translate(2px,-2px)}
 
-  /* Not in the mockup — new states this page needs that the reference never
-     had to render (the mockup's grid was pre-seeded, never empty/erroring). */
-  .noscript{color:var(--muted); font-size:14px; margin-top:16px}
-  .noscript a{color:var(--sun); font-weight:500}
-  .noscript a:hover{text-decoration:underline; text-underline-offset:3px}
+  /* Error state — also runtime-injected (see the fetch().catch() below), so
+     it has the same scoping problem and lives here too. */
   .fetch-error{color:var(--muted); font-size:14px; margin-top:16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap}
 </style>
 <script>
