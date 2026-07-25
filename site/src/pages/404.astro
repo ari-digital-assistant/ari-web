@@ -1,0 +1,17 @@
+---
+import Base from '../layouts/Base.astro';
+---
+<Base title="Not found — Ari">
+  <section class="notfound wrap">
+    <span class="eyebrow">404</span>
+    <h1>This page wandered off.</h1>
+    <p>Ari looked everywhere on the device — and didn't phone home to check, obviously. The page you're after doesn't exist, or hasn't been built yet.</p>
+    <p class="cta-row"><a class="btn btn-primary" href="/">Back home →</a></p>
+  </section>
+</Base>
+<style>
+  .notfound{padding:96px 0; text-align:center; display:flex; flex-direction:column; align-items:center; gap:16px}
+  .notfound h1{font-size:clamp(32px,5vw,52px)}
+  .notfound p{color:var(--muted); max-width:46ch}
+  .notfound .cta-row{margin-top:12px}
+</style>
