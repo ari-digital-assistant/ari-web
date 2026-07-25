@@ -1,0 +1,116 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base title="Skills — Ari" description="Browse Ari's skills — signed, open, and installable from inside the app.">
+  <section class="skills-page wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Skills</span>
+      <h1>A growing shelf of skills.</h1>
+      <p>Everything Ari can do is a skill — signed, open, and installable from inside the app. This list is live from the registry.</p>
+    </div>
+    <div class="toolbar">
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="q" type="search" placeholder="Search skills — weather, timer, smart home…" aria-label="Search skills" />
+      </label>
+      <div class="chips" id="filters">
+        <button class="chip" data-f="all" aria-pressed="true">All</button>
+        <button class="chip" data-f="skill" aria-pressed="false">Skills</button>
+        <button class="chip" data-f="assistant" aria-pressed="false">Assistants</button>
+        <button class="chip" data-f="local" aria-pressed="false">On-device only</button>
+      </div>
+    </div>
+    <p class="count" id="count" role="status">Loading skills…</p>
+    <div class="grid" id="grid"></div>
+    <noscript>
+      <p class="noscript">The live skills list needs JavaScript. You can browse skills inside the Ari app, or see the whole registry on
+      <a href="https://github.com/ari-digital-assistant/ari-skills">GitHub</a>.</p>
+    </noscript>
+  </section>
+</Base>
+<style>
+  /* Scoped page styles, consistent with the Dusk system. Shared primitives
+     (.wrap, .eyebrow, .sec-head, .btn/.btn-ghost) come from global.css and
+     are NOT redefined here. Everything below is ported verbatim from
+     docs/design-reference/dusk-mockup.html's #skills section, with one
+     deliberate adaptation: the mockup's card is an <article>, but cardHtml()
+     (src/lib/skills.js) renders a whole <a class="card"> block link, so
+     .card picks up text-decoration:none / color:inherit to neutralise link
+     styling while keeping the hover lift. */
+  .skills-page{padding-block:60px 96px}
+
+  .toolbar{display:flex; gap:12px; margin-top:34px; flex-wrap:wrap; align-items:center}
+  .search{position:relative; flex:1; min-width:220px}
+  .search input{
+    width:100%; padding:12px 14px 12px 40px; border-radius:12px; border:1px solid var(--hair);
+    background:var(--surface); color:var(--ink); font-family:"Manrope"; font-size:15px;
+  }
+  .search input:focus{outline:none; border-color:var(--sun); box-shadow:0 0 0 4px color-mix(in srgb,var(--sun) 18%, transparent)}
+  .search svg{position:absolute; left:14px; top:50%; transform:translateY(-50%); width:16px; height:16px; color:var(--muted)}
+  .chips{display:flex; gap:8px; flex-wrap:wrap}
+  .chip{
+    font-family:var(--mono); font-size:12.5px; font-weight:500; letter-spacing:.02em;
+    padding:9px 14px; border-radius:10px; border:1px solid var(--hair); background:var(--surface);
+    color:var(--muted); cursor:pointer; transition:all .16s;
+  }
+  .chip:hover{color:var(--ink); border-color:var(--plum)}
+  .chip[aria-pressed="true"]{background:var(--sun); color:#fff; border-color:var(--sun)}
+  .count{font-family:var(--mono); font-size:12.5px; color:var(--muted); margin-top:16px}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(288px,1fr)); gap:16px; margin-top:16px}
+
+  .card{
+    background:var(--surface); border:1px solid var(--hair); border-radius:16px; padding:20px;
+    display:flex; flex-direction:column; gap:12px; transition:transform .16s, border-color .16s, box-shadow .2s;
+    text-decoration:none; color:inherit;
+  }
+  .card:hover{transform:translateY(-3px); border-color:var(--plum); box-shadow:var(--shadow)}
+  .card-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px}
+  .card h3{font-size:18px; letter-spacing:-.02em; text-transform:capitalize}
+  .card .id{font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:3px; word-break:break-all}
+  .badge{font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:5px 9px; border-radius:7px; white-space:nowrap; flex:none}
+  .badge.skill{background:color-mix(in srgb,var(--sun) 16%, var(--surface)); color:var(--sun)}
+  .badge.assistant{background:color-mix(in srgb,var(--plum) 20%, var(--surface)); color:var(--plum)}
+  .card .desc{color:var(--muted); font-size:13.5px; line-height:1.55; flex:1; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
+  .caps{display:flex; gap:6px; flex-wrap:wrap}
+  .cap{font-family:var(--mono); font-size:11px; color:var(--ink); background:var(--surface-2); border:1px solid var(--hair); padding:3px 8px; border-radius:7px}
+  .card-foot{display:flex; align-items:center; justify-content:space-between; gap:10px; padding-top:4px; border-top:1px solid var(--hair)}
+  .priv{display:flex; align-items:center; gap:7px; font-family:var(--mono); font-size:11px; letter-spacing:.02em}
+  .priv .dot{width:7px; height:7px; border-radius:50%; flex:none}
+  .priv.local{color:var(--on-device)} .priv.local .dot{background:var(--on-device)}
+  .priv.net{color:var(--network)} .priv.net .dot{background:var(--network)}
+  .open{display:inline-flex; align-items:center; gap:6px; font-weight:700; font-size:13px; color:var(--sun); cursor:pointer}
+
+  /* Not in the mockup — new states this page needs that the reference never
+     had to render (the mockup's grid was pre-seeded, never empty/erroring). */
+  .noscript{color:var(--muted); font-size:14px; margin-top:16px}
+  .noscript a{color:var(--sun); font-weight:500}
+  .noscript a:hover{text-decoration:underline; text-underline-offset:3px}
+  .fetch-error{color:var(--muted); font-size:14px; margin-top:16px; display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+</style>
+<script>
+  import { filterSkills, cardHtml } from '../../lib/skills.js';
+  const URL = 'https://raw.githubusercontent.com/ari-digital-assistant/ari-skills/main/index.json';
+  const grid = document.getElementById('grid');
+  const count = document.getElementById('count');
+  const q = document.getElementById('q');
+  let all = [], filter = 'all';
+
+  function render() {
+    const rows = filterSkills(all, { type: filter, query: q.value });
+    grid.innerHTML = rows.map(cardHtml).join('');
+    count.textContent = `${rows.length} of ${all.length} skills`;
+  }
+  document.getElementById('filters').addEventListener('click', (e) => {
+    const b = e.target.closest('.chip'); if (!b) return;
+    filter = b.dataset.f;
+    document.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', String(c === b)));
+    render();
+  });
+  q.addEventListener('input', render);
+
+  fetch(URL)
+    .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+    .then((data) => { all = data.skills || []; render(); })
+    .catch(() => { count.textContent = ''; grid.innerHTML = '<p class="fetch-error">Couldn’t load the skills list. <button id="retry" class="btn btn-ghost">Retry</button></p>';
+      document.getElementById('retry')?.addEventListener('click', () => location.reload()); });
+</script>
