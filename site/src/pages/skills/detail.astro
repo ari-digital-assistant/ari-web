@@ -1,0 +1,116 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base title="Skill — Ari" description="An Ari skill. Signed, open, and installable from inside the app.">
+  <section class="detail-page wrap">
+    <p class="back"><a href="/skills">← All skills</a></p>
+    <div id="detail" role="status">Loading…</div>
+  </section>
+</Base>
+<style>
+  /* Scoped page styles — build-time shell elements only. Everything
+     `detailHtml()` renders is injected at runtime via innerHTML, so it lives
+     in the `is:global` block below instead (see the comment there). */
+  .detail-page{padding-block:60px 96px; max-width:720px}
+  .back{margin-bottom:20px}
+  .back a{
+    font-family:var(--mono); font-size:13px; color:var(--muted); font-weight:500;
+    display:inline-flex; align-items:center; gap:4px; transition:color .15s;
+  }
+  .back a:hover{color:var(--sun)}
+</style>
+<style is:global>
+  /* Global (not scoped) on purpose: detailHtml() (src/lib/skills.js) injects
+     the whole detail view into #detail at runtime via innerHTML, after
+     Astro has already stamped its scoped-CSS `data-astro-cid-*` attribute
+     pass over the build-time DOM. Runtime-injected elements never get that
+     attribute, so scoped rules would silently never match — the detail view
+     would render but stay completely unstyled (see Task 2's card-styling
+     bug for the same trap). Ported verbatim from
+     docs/design-reference/dusk-mockup.html's #drawer section, with two
+     adaptations to match what detailHtml() actually emits: the mockup uses
+     `.d-hero h2` / `.d-section > h3` for the skill name / section headings,
+     but detailHtml() renders `<h1>` / `<h2>` there instead, so the selectors
+     below target h1/h2 to match. The mockup's `.d-icon` has no corresponding
+     element in detailHtml() output today, but is kept here (harmless,
+     unused) so it's ready if an icon is added later.
+
+     Also included here: the shared chips `.badge`/`.caps`/`.cap`/`.priv`
+     that detailHtml() reuses from the card markup. Each page's `is:global`
+     CSS only ships on that page, so Task 2's /skills grid copy of these
+     rules does not reach this page — they have to be duplicated here too. */
+  .badge{font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:5px 9px; border-radius:7px; white-space:nowrap; flex:none}
+  .badge.skill{background:color-mix(in srgb,var(--sun) 16%, var(--surface)); color:var(--sun)}
+  .badge.assistant{background:color-mix(in srgb,var(--plum) 20%, var(--surface)); color:var(--plum)}
+  .caps{display:flex; gap:6px; flex-wrap:wrap}
+  .cap{font-family:var(--mono); font-size:11px; color:var(--ink); background:var(--surface-2); border:1px solid var(--hair); padding:3px 8px; border-radius:7px}
+  .priv{display:flex; align-items:center; gap:7px; font-family:var(--mono); font-size:11px; letter-spacing:.02em}
+  .priv .dot{width:7px; height:7px; border-radius:50%; flex:none}
+  .priv.local{color:var(--on-device)} .priv.local .dot{background:var(--on-device)}
+  .priv.net{color:var(--network)} .priv.net .dot{background:var(--network)}
+
+  .d-hero{display:flex; align-items:flex-start; gap:16px; margin-top:12px}
+  .d-icon{width:60px; height:60px; border-radius:16px; flex:none; display:grid; place-items:center; background:var(--surface); border:1px solid var(--hair); box-shadow:0 0 30px -8px var(--glow)}
+  .d-icon svg{width:34px; height:34px}
+  .d-hero h1{font-size:32px; letter-spacing:-.03em; text-transform:capitalize}
+  .d-hero .id{font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:5px; word-break:break-all}
+  .d-meta{display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap}
+  .ver{font-family:var(--mono); font-size:11px; color:var(--muted); border:1px solid var(--hair); padding:3px 8px; border-radius:7px}
+  .d-preview{margin-top:22px; border-radius:16px; overflow:hidden; border:1px solid var(--hair);
+    background:linear-gradient(160deg, color-mix(in srgb,var(--surface) 72%, var(--amber)) 0%, var(--surface) 60%);
+    aspect-ratio:16/10; display:grid; place-items:center; text-align:center}
+  .d-preview .inner{display:flex; flex-direction:column; align-items:center; gap:10px; color:var(--muted)}
+  .d-preview .inner svg{width:30px; height:30px; color:var(--sun)}
+  .d-preview .inner b{color:var(--ink); font-weight:700; font-size:15px}
+  .d-preview .inner span{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase}
+  .d-section{margin-top:26px}
+  .d-section h2{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--sun); margin-bottom:12px}
+  .d-section p.body{color:var(--ink); font-size:15px; line-height:1.62}
+  .facts{border:1px solid var(--hair); border-radius:14px; overflow:hidden; background:var(--surface)}
+  .fact{display:flex; justify-content:space-between; gap:16px; padding:13px 16px; border-bottom:1px solid var(--hair); font-size:14px}
+  .fact:last-child{border-bottom:none}
+  .fact .k{color:var(--muted); font-family:var(--mono); font-size:12px; letter-spacing:.03em}
+  .fact .v{color:var(--ink); font-weight:600; text-align:right}
+  .fact .v.caps-list{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; font-weight:400}
+  .priv-banner{display:flex; gap:12px; align-items:flex-start; padding:15px 16px; border-radius:14px; margin-top:14px}
+  .priv-banner.local{background:color-mix(in srgb,var(--on-device) 12%, var(--surface)); border:1px solid color-mix(in srgb,var(--on-device) 30%, transparent)}
+  .priv-banner.net{background:color-mix(in srgb,var(--network) 12%, var(--surface)); border:1px solid color-mix(in srgb,var(--network) 30%, transparent)}
+  .priv-banner .dot{width:9px; height:9px; border-radius:50%; margin-top:5px; flex:none}
+  .priv-banner.local .dot{background:var(--on-device)} .priv-banner.net .dot{background:var(--network)}
+  .priv-banner .t{font-weight:700; font-size:14px}
+  .priv-banner .s{color:var(--muted); font-size:13px; margin-top:2px}
+  .d-note{
+    margin-top:26px; font-family:var(--mono); font-size:12.5px; line-height:1.6; color:var(--muted);
+    border:1px dashed var(--hair); border-radius:14px; padding:16px 18px;
+  }
+  .d-note .sub{display:block; margin-top:8px}
+  .d-actions{display:flex; gap:12px; margin-top:28px}
+  .d-actions .btn{flex:1; justify-content:center}
+
+  .skill-missing{text-align:center; padding:64px 0; display:flex; flex-direction:column; align-items:center; gap:14px}
+  .skill-missing h1{font-size:clamp(28px,4vw,38px)}
+  .skill-missing p{color:var(--muted); max-width:46ch}
+  .skill-missing a{color:var(--sun); font-weight:600}
+  .skill-missing a:hover{text-decoration:underline; text-underline-offset:3px}
+
+  @media (max-width:560px){ .d-hero h1{font-size:24px} }
+</style>
+<script>
+  import { idFromPath, findSkill, detailHtml } from '../../lib/skills.js';
+  const URL = 'https://raw.githubusercontent.com/ari-digital-assistant/ari-skills/main/index.json';
+  const mount = document.getElementById('detail');
+  const id = idFromPath(location.pathname);
+  const missing = () => { mount.innerHTML = '<div class="skill-missing"><h1>Skill not found</h1><p>That skill isn’t in the registry (yet). <a href="/skills">Browse all skills →</a></p></div>'; };
+
+  if (!id) { missing(); } else {
+    fetch(URL)
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+      .then((data) => {
+        const s = findSkill(data.skills || [], id);
+        if (!s) { missing(); return; }
+        document.title = `${s.name} — Ari skill`;
+        mount.innerHTML = detailHtml(s);
+      })
+      .catch(() => { mount.innerHTML = '<div class="skill-missing"><h1>Couldn’t load this skill</h1><p><button class="btn btn-ghost" onclick="location.reload()">Retry</button></p></div>'; });
+  }
+</script>
