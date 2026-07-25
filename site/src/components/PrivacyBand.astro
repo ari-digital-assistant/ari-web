@@ -1,0 +1,46 @@
+<section class="privacy" id="privacy">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Privacy</span>
+      <h2>Your data stays yours. Here's how.</h2>
+      <p>Most assistants ship your voice to a data centre and ask you to trust the policy. Ari mostly doesn't need to — and when something does use the internet, it says so.</p>
+    </div>
+    <div class="tenets">
+      <div class="tenet">
+        <div class="n">On your device</div>
+        <h3>The thinking happens here</h3>
+        <p>The listening, the transcribing, and the working-out-what-you-meant all happen on your phone. The internet is optional.</p>
+      </div>
+      <div class="tenet">
+        <div class="n">Opt-in cloud</div>
+        <h3>You decide what leaves</h3>
+        <p>Want to plug in ChatGPT or Claude? Go for it — but that's your call, and every skill is upfront about when it uses the network.</p>
+      </div>
+      <div class="tenet">
+        <div class="n">Open source</div>
+        <h3>Don't just take our word</h3>
+        <p>Every line is out in the open. Read the code, check the claims, or fork the lot.</p>
+      </div>
+    </div>
+    <p class="band-cta"><a href="/privacy">Read the whole privacy story →</a></p>
+  </div>
+</section>
+<style>
+  /* Ported verbatim from docs/design-reference/dusk-mockup.html's
+     <section class="privacy"> block. Shared .eyebrow/.wrap/.sec-head +
+     section padding live in global.css. */
+  .privacy{background:var(--plum-ink); color:#F6EDE1; border-block:1px solid var(--hair)}
+  .privacy .eyebrow{color:var(--amber)}
+  .privacy .sec-head p{color:#D9C3D0}
+  .tenets{display:grid; grid-template-columns:repeat(3,1fr); gap:22px; margin-top:44px}
+  .tenet{background:rgba(255,255,255,.035); border:1px solid rgba(255,255,255,.09); border-radius:16px; padding:26px}
+  .tenet .n{font-family:var(--mono); font-size:12px; letter-spacing:.14em; color:var(--amber); text-transform:uppercase}
+  .tenet h3{font-size:20px; margin-top:14px; margin-bottom:9px; letter-spacing:-.02em}
+  .tenet p{color:#D9C3D0; font-size:14.5px; line-height:1.6}
+  .band-cta{margin-top:28px}
+  .band-cta a{color:var(--amber)}
+  .band-cta a:hover{text-decoration:underline}
+  @media (max-width:860px){
+    .tenets{grid-template-columns:1fr}
+  }
+</style>
