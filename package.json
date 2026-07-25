@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "engines": { "node": ">=22.12" },
-  "workspaces": ["site"],
+  "workspaces": ["site", "docs"],
   "scripts": {
     "dev": "npm run dev --workspace site",
-    "build": "npm run build --workspace site",
+    "build": "npm run build --workspace site && npm run build --workspace docs",
     "assemble": "node scripts/assemble.mjs",
     "test": "vitest run",
     "audit": "npm audit --omit=dev --audit-level=high"
