@@ -1,0 +1,49 @@
+---
+import Feature from './Feature.astro';
+---
+<section id="features">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="eyebrow">Features</span>
+      <h2>Everything a good assistant should be. Nothing it shouldn't.</h2>
+    </div>
+    <div class="features-grid">
+      <Feature title="“Hey Ari” wake word">
+        <svg slot="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v10M8 6v6M16 6v6M4 9v3M20 9v3"/></svg>
+        Say the magic words and Ari wakes up — no button, no fuss. The listening runs on-device, so there's no always-on mic piping your kitchen chatter off to the cloud.
+      </Feature>
+      <Feature title="Skills & assistants">
+        <svg slot="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        Weather, timers, reminders, smart home, music, directions — all installable from an open, signed registry. Want a big cloud brain too? Add one. Or don't.
+      </Feature>
+      <Feature title="Speaks your language">
+        <svg slot="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
+        English and Italian today, and adding a language is translation work, not a rewrite. Ari was built multilingual from day one, not bolted on later.
+      </Feature>
+      <Feature title="A brain that works offline">
+        <svg slot="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4M15 3h4a2 2 0 0 1 2 2v4M9 21H5a2 2 0 0 1-2-2v-4M15 21h4a2 2 0 0 0 2-2v-4"/><circle cx="12" cy="12" r="3"/></svg>
+        There's a small language model living on your device for the open-ended questions. No signal? Ari still has answers. Prefer a cloud model? Plug it in — your call.
+      </Feature>
+      <Feature title="Talk or type">
+        <svg slot="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3z"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+        Voice-first, but never voice-only. Say it, dictate it, or just type it — and answers come back as cards you can tap or talk to.
+      </Feature>
+      <Feature title="Yours to extend">
+        <svg slot="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3v3M16 3v3M4 9h16M5 21h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2z"/><path d="M9 15l2 2 4-4"/></svg>
+        Fancy building a skill? The simple kind takes about fifteen minutes and zero build tools. Need real logic? Ship a sandboxed WASM one instead.
+      </Feature>
+    </div>
+  </div>
+</section>
+<style>
+  /* Ported verbatim from docs/design-reference/dusk-mockup.html's .features-grid
+     rule + its responsive breakpoints. Shared .sec-head/.eyebrow/.wrap +
+     section padding live in global.css. */
+  .features-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:44px}
+  @media (max-width:860px){
+    .features-grid{grid-template-columns:1fr 1fr}
+  }
+  @media (max-width:560px){
+    .features-grid{grid-template-columns:1fr}
+  }
+</style>

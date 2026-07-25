@@ -1,0 +1,18 @@
+---
+const { title } = Astro.props;
+---
+<div class="feature">
+  <div class="ic"><slot name="icon" /></div>
+  <h3>{title}</h3>
+  <p><slot /></p>
+</div>
+<style>
+  /* Ported verbatim from docs/design-reference/dusk-mockup.html's
+     .feature / .feature .ic / .feature h3 / .feature p rules. */
+  .feature{background:var(--surface); border:1px solid var(--hair); border-radius:16px; padding:24px; transition:transform .18s, border-color .18s}
+  .feature:hover{transform:translateY(-3px); border-color:var(--plum)}
+  .feature .ic{width:40px; height:40px; border-radius:11px; display:grid; place-items:center; background:color-mix(in srgb,var(--sun) 14%, var(--surface)); color:var(--sun); margin-bottom:16px}
+  .feature .ic :global(svg){width:21px; height:21px}
+  .feature h3{font-size:17.5px; letter-spacing:-.02em}
+  .feature p{color:var(--muted); font-size:14px; margin-top:7px; line-height:1.55}
+</style>
