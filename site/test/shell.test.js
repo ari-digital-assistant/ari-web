@@ -23,4 +23,8 @@ describe('site shell', () => {
     expect(html).toContain('Open source');
     expect(html).toContain('href="https://github.com/ari-digital-assistant');
   });
+  it('features link points at the home-page anchor, not a dead /features page', () => {
+    expect(html).toContain('href="/#features"');
+    expect(html).not.toContain('href="/features"');
+  });
 });
