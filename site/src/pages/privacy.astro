@@ -1,0 +1,126 @@
+---
+import Base from '../layouts/Base.astro';
+import FriendlyBadge from '../components/FriendlyBadge.astro';
+---
+<Base title="Privacy — Ari" description="How Ari keeps your voice and your data on your device: private by default, cloud by choice.">
+  <article class="privacy-page wrap">
+    <header class="pp-hero">
+      <span class="eyebrow">Privacy</span>
+      <h1>Here's the deal with your data.</h1>
+      <p class="lede">Most voice assistants ship your voice off to a data centre and ask you to trust the privacy policy. Ari mostly doesn't need to — the hard work happens right on your device. And on the rare occasion something does use the internet, Ari tells you. No small print, no surprises.</p>
+    </header>
+
+    <section class="pp-block">
+      <h2>What happens on your device</h2>
+      <p>Quite a lot, actually. When you say &ldquo;Hey Ari&rdquo;, the wake word is spotted on the phone. Your speech is turned into text on the phone. Working out what you actually meant? Phone. There's even a small language model on board for the open-ended questions, so Ari can answer plenty with no signal at all. None of that needs the internet to work.</p>
+    </section>
+
+    <section class="pp-block">
+      <h2>What leaves your device — and only when you say so</h2>
+      <p>Here's the honest bit. A few things do use the network, but always because you asked them to:</p>
+      <ul>
+        <li><strong>Cloud assistants.</strong> Plug in ChatGPT, Claude or Gemini for the big questions and your question goes to that provider, with your own API key. Entirely optional.</li>
+        <li><strong>Skills with a job to do.</strong> Asking for the weather or turning off the lights means talking to a weather service or your smart home. That's rather the point of them.</li>
+        <li><strong>Every skill is labelled.</strong> In the skills browser, each one is marked <em>on-device</em> or <em>uses-network</em> — so you know before you install, not after.</li>
+      </ul>
+    </section>
+
+    <section class="pp-block">
+      <h2>No account. No telemetry. No kidding.</h2>
+      <p>There's nothing to sign up for — no profile, no login for the core assistant. And there's no analytics quietly counting your taps, no crash-reporter phoning home, no &ldquo;anonymous usage data&rdquo;. We checked: there isn't an analytics SDK anywhere in the app, because we never put one there.</p>
+    </section>
+
+    <section class="pp-block">
+      <h2>Open all the way down</h2>
+      <p>You don't have to believe a word of this. The engine, the apps, and the signed skills registry are all out in the open — read the code, poke at it, or fork the whole thing.</p>
+      <p class="pp-links">
+        <a href="https://github.com/ari-digital-assistant">GitHub org</a> ·
+        <a href="https://github.com/ari-digital-assistant/ari-skills">ari-skills</a>
+      </p>
+    </section>
+
+    <section class="pp-block pp-manifesto">
+      <div>
+        <h2>We signed the Friendly Manifesto</h2>
+        <p>A plain-language promise to build honest, secure, respectful software that doesn't exploit the people using it. That's the whole idea behind Ari, so signing up was easy.</p>
+      </div>
+      <FriendlyBadge />
+    </section>
+
+    <footer class="pp-close">
+      <p>That's the deal.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="/#get">Get Ari</a>
+        <a class="btn btn-ghost" href="https://github.com/ari-digital-assistant">Read the code</a>
+      </div>
+    </footer>
+  </article>
+</Base>
+<style>
+  /* Scoped page styles, consistent with the Dusk system. Shared primitives
+     (.wrap, .eyebrow, .btn/.btn-primary/.btn-ghost) come from global.css and
+     are NOT redefined here. Everything below uses tokens so both themes hold. */
+
+  /* .wrap gives the 1120px column; add page rhythm and a narrower prose
+     measure so running text stays around 65ch. */
+  .privacy-page{padding-block:60px 96px}
+
+  /* Hero — big display scale like the home hero (Manrope ExtraBold + tight
+     tracking inherited from global h1); muted, larger lede. */
+  .pp-hero{max-width:62ch}
+  .pp-hero h1{font-size:clamp(40px,6vw,64px); line-height:1.03; margin-top:16px}
+  .lede{
+    margin-top:22px; font-size:clamp(17px,2vw,20px); line-height:1.5;
+    color:var(--muted); max-width:56ch; font-weight:450;
+  }
+
+  /* Blocks — reset the global section 72px padding to a tighter margin rhythm;
+     keep prose ~65ch for readability. */
+  .pp-block{padding:0; margin-block:44px; max-width:65ch}
+  .pp-block h2{font-size:clamp(24px,3vw,32px); line-height:1.12; margin-bottom:14px}
+  .pp-block p{color:var(--ink)}
+  .pp-block p + p{margin-top:14px}
+
+  .pp-block ul{margin:18px 0 0; padding-left:1.15em; line-height:1.7}
+  .pp-block li{margin-bottom:12px}
+  .pp-block li:last-child{margin-bottom:0}
+  .pp-block li strong{color:var(--ink); font-weight:700}
+  /* The on-device / uses-network labels read as the same chips users meet in
+     the skills browser — mono, bordered, token-coloured. */
+  .pp-block li em{
+    font-style:normal; font-family:var(--mono); font-size:.82em;
+    letter-spacing:.02em; padding:1px 7px; border-radius:6px;
+    background:var(--surface-2); border:1px solid var(--hair); color:var(--ink);
+    white-space:nowrap;
+  }
+
+  .pp-links{margin-top:16px; font-family:var(--mono); font-size:14px; color:var(--muted)}
+  .pp-links a{color:var(--sun); font-weight:500}
+  .pp-links a:hover{text-decoration:underline; text-underline-offset:3px}
+
+  /* Manifesto — a card that puts the copy and the badge side by side, and
+     stacks on narrow screens. */
+  .pp-manifesto{
+    max-width:840px; margin-block:52px;
+    display:flex; align-items:center; justify-content:space-between; gap:32px;
+    background:var(--surface); border:1px solid var(--hair);
+    border-radius:16px; padding:28px 32px; box-shadow:var(--shadow);
+  }
+  .pp-manifesto > div{max-width:52ch}
+  .pp-manifesto h2{margin-bottom:12px}
+  .pp-manifesto p{color:var(--muted); font-size:16px}
+  .pp-manifesto :global(.friendly){flex:none}
+
+  /* Close — a firm sign-off and the shared buttons. */
+  .pp-close{margin-top:60px}
+  .pp-close p{
+    font-size:clamp(22px,3vw,30px); font-weight:800; letter-spacing:-.02em;
+    color:var(--ink);
+  }
+  .pp-close .cta-row{display:flex; gap:14px; margin-top:22px; flex-wrap:wrap}
+
+  @media (max-width:640px){
+    .pp-manifesto{flex-direction:column; align-items:flex-start; gap:24px}
+    .pp-manifesto > div{max-width:none}
+  }
+</style>
