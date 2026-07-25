@@ -1,0 +1,30 @@
+<section class="get" id="get">
+  <div class="wrap">
+    <div class="get-card">
+      <span class="eyebrow">Get Ari</span>
+      <h2>Not out yet — but close.</h2>
+      <p>Ari's in active pre-release. Star the repo to follow along, and you'll be first to know the moment the Android build lands.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/ari-digital-assistant">Star on GitHub</a>
+        <span class="badge-soon">F-Droid &amp; Google Play — coming soon</span>
+      </div>
+    </div>
+  </div>
+</section>
+<style>
+  /* Ported verbatim from docs/design-reference/dusk-mockup.html's
+     <section class="get"> block. Shared .eyebrow/.wrap/.btn/.btn-primary +
+     section padding live in global.css. */
+  .get{position:relative; overflow:hidden}
+  .get-card{
+    background:var(--plum-ink); color:#F6EDE1; border-radius:24px; padding:56px 44px; text-align:center;
+    position:relative; overflow:hidden; border:1px solid var(--hair);
+  }
+  .get-card::before{content:""; position:absolute; inset:auto -10% -60% -10%; height:80%;
+    background:radial-gradient(ellipse at 50% 100%, var(--glow), transparent 70%);}
+  .get-card .eyebrow{color:var(--amber); position:relative}
+  .get-card h2{font-size:clamp(28px,4vw,42px); margin-top:14px; position:relative}
+  .get-card p{color:#D9C3D0; max-width:46ch; margin:16px auto 0; position:relative}
+  .get-card .cta-row{display:flex; gap:14px; justify-content:center; margin-top:30px; position:relative; flex-wrap:wrap}
+  .badge-soon{display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12px; color:#D9C3D0; border:1px solid rgba(255,255,255,.16); border-radius:999px; padding:8px 14px}
+</style>
