@@ -44,4 +44,7 @@ describe('develop section', () => {
     expect(h).toMatch(/SKILL\.\w+\.md|SKILL\.en\.md/);
     expect(h).toMatch(/normalis|lowercase/i);
   });
+  it('first-skill example manifest includes the required engine field', () => {
+    expect(read('develop/first-skill.html')).toMatch(/engine/);
+  });
 });

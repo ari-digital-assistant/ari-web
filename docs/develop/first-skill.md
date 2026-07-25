@@ -19,6 +19,7 @@ metadata:
   ari:
     id: dev.heyari.coin-flip
     version: "0.1.0"
+    engine: ">=0.1"
     author: Your Name <you@example.com>
     languages: [en]
     matching:
@@ -39,6 +40,8 @@ Flips a coin. "flip a coin" → "Heads." or "Tails."
 - `name` matches the directory name exactly.
 - `metadata.ari.id` is a reverse-DNS identifier, `dev.heyari.<slug>` for
   skills in this taxonomy.
+- `metadata.ari.engine` is required — it's the version range of the Ari
+  engine your skill supports. Without it, the manifest won't load.
 - `matching.patterns` are the fast path: every keyword in a pattern must
   appear in the utterance for that pattern to fire.
 - `declarative.response_pick` is a list Ari picks one line from at random.
