@@ -35,7 +35,36 @@ Route53; ACM cert in `us-east-1`. Fully serverless (no Lambda). Design +
 runbook: `../docs/superpowers/specs/2026-07-24-heyari-dev-website-design.md`.
 
 ## Fingerprints (assetlinks.json)
-`sha256_cert_fingerprints` is an array — currently the **debug** key. Append the
-**release** (self keystore or Play App Signing) and **F-Droid** fingerprints
-before those channels ship; a missing channel fingerprint silently breaks App
-Link verification for that channel.
+`sha256_cert_fingerprints` is an array — currently two **debug** keys, from two
+dev machines. Append the **release** (self keystore or Play App Signing) and
+**F-Droid** fingerprints before those channels ship; a missing channel
+fingerprint silently breaks App Link verification for that channel.
+
+Silently is the word. Android reports `heyari.dev: legacy_failure` and simply
+declines to hand the callback to the app — the browser keeps the redirect and
+shows a bare landing page with nothing to explain itself. Home Assistant
+sign-in dead-ends there. Check with:
+
+```bash
+adb shell pm get-app-links dev.heyari.ari      # want: heyari.dev: approved
+```
+
+An unlisted key is the usual cause, and every new dev machine generates one
+(`~/.config/.android/debug.keystore` on Linux, or `~/.android/`). Read yours
+with:
+
+```bash
+keytool -list -v -keystore ~/.config/.android/debug.keystore \
+        -storepass android -alias androiddebugkey | grep SHA256
+```
+
+To unblock a machine without waiting on a deploy, approve the domain locally —
+note this is per-install and is lost on every uninstall:
+
+```bash
+adb shell pm set-app-links --package dev.heyari.ari 2 heyari.dev
+```
+
+The durable fix is a committed debug keystore plus a `signingConfig` pointing
+at it in `ari-android`, so the debug fingerprint stops changing per machine and
+only needs listing once. Normal practice for a debug key; not yet done.
