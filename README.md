@@ -35,10 +35,12 @@ Route53; ACM cert in `us-east-1`. Fully serverless (no Lambda). Design +
 runbook: `../docs/superpowers/specs/2026-07-24-heyari-dev-website-design.md`.
 
 ## Fingerprints (assetlinks.json)
-`sha256_cert_fingerprints` is an array — currently two **debug** keys, from two
-dev machines. Append the **release** (self keystore or Play App Signing) and
-**F-Droid** fingerprints before those channels ship; a missing channel
-fingerprint silently breaks App Link verification for that channel.
+`sha256_cert_fingerprints` holds one entry: the **shared debug key** committed
+at `ari-android/app/debug.keystore`. Every machine and CI runner signs debug
+builds with it, so there is exactly one debug fingerprint to publish rather
+than one per developer. Append the **release** (self keystore or Play App
+Signing) and **F-Droid** fingerprints before those channels ship — a missing
+channel fingerprint silently breaks App Link verification for that channel.
 
 Silently is the word. Android reports `heyari.dev: legacy_failure` and simply
 declines to hand the callback to the app — the browser keeps the redirect and
@@ -49,22 +51,24 @@ sign-in dead-ends there. Check with:
 adb shell pm get-app-links dev.heyari.ari      # want: heyari.dev: approved
 ```
 
-An unlisted key is the usual cause, and every new dev machine generates one
-(`~/.config/.android/debug.keystore` on Linux, or `~/.android/`). Read yours
-with:
+If it fails, confirm the APK is actually signed with the shared key rather than
+a leftover per-machine one:
 
 ```bash
-keytool -list -v -keystore ~/.config/.android/debug.keystore \
-        -storepass android -alias androiddebugkey | grep SHA256
+apksigner verify --print-certs app/build/outputs/apk/debug/app-debug.apk
+# want SHA-256 digest 9eb9bef9…, DN "CN=Ari Debug"
 ```
 
-To unblock a machine without waiting on a deploy, approve the domain locally —
-note this is per-install and is lost on every uninstall:
+Verification also needs this site deployed — the fingerprint only counts once
+heyari.dev is actually serving it. To unblock a machine before that, approve
+the domain locally; note it is per-install and lost on every uninstall:
 
 ```bash
 adb shell pm set-app-links --package dev.heyari.ari 2 heyari.dev
 ```
 
-The durable fix is a committed debug keystore plus a `signingConfig` pointing
-at it in `ari-android`, so the debug fingerprint stops changing per machine and
-only needs listing once. Normal practice for a debug key; not yet done.
+**Before public release**, drop the debug fingerprint from this file. It is
+public by design, so anyone can build a debug APK that App Links will trust for
+heyari.dev. The OAuth flow uses PKCE (S256), so an intercepted authorization
+code is not redeemable without the verifier that never leaves the real app —
+but that is a mitigation, not a reason to ship it.
