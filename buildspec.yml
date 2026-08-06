@@ -10,6 +10,13 @@ version: 0.2
 # The service role needs, at minimum:
 #   s3:PutObject, s3:DeleteObject, s3:ListBucket   on  heyari-dev-static (+ /*)
 #   cloudfront:CreateInvalidation                  on  the E3DZC8ECXAT4FZ distribution
+#   cloudfront:GetFunction, cloudfront:DescribeFunction,
+#   cloudfront:UpdateFunction, cloudfront:PublishFunction
+#                                                  on  the heyari-rewrite function
+# The function permissions are what let deploy.sh ship cf-rewrite.js. Without
+# them the deploy fails at that step rather than silently skipping it — which
+# is the point: the routing function drifted six weeks behind the repo once
+# already, and a deploy that can't publish it should say so loudly.
 # Use a CodeBuild image with Node 22 (aws/codebuild/standard:7.0 or later).
 
 env:

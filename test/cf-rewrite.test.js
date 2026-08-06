@@ -11,6 +11,14 @@ describe('cf-rewrite CloudFront Function', () => {
     expect(run('/skills/dev.heyari.weather')).toBe('/skills/detail/index.html');
     expect(run('/skills/dev.heyari.homeassistant')).toBe('/skills/detail/index.html');
   });
+  it('rewrites a dotless skill deep-link too', () => {
+    // The dotted case survives by way of the explicit skills branch, but an id
+    // without dots would fall through to the directory heuristic and be sent to
+    // /skills/coinflip/index.html — a key that doesn't exist, which a private
+    // bucket reports as 403 rather than 404.
+    expect(run('/skills/coinflip')).toBe('/skills/detail/index.html');
+    expect(run('/skills/coinflip/')).toBe('/skills/detail/index.html');
+  });
   it('serves the skills index, not the detail template', () => {
     expect(run('/skills')).toBe('/skills/index.html');
     expect(run('/skills/')).toBe('/skills/index.html');
