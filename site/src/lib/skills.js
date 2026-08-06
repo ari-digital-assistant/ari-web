@@ -1,6 +1,46 @@
 // Pure helpers for the skills browser. No DOM, no network — unit-tested.
 const NET_CAPS = new Set(['http', 'authorize', 'media_services', 'navigation']);
 
+// Screenshot paths in index.json are relative to the registry root, same
+// as bundles and manifest sidecars.
+export const REGISTRY_BASE = 'https://raw.githubusercontent.com/ari-digital-assistant/ari-skills/main/';
+
+// Platform ids the registry publishes screenshots under, and how we spell
+// them for people. Anything the validator doesn't recognise never reaches
+// index.json, so an unknown id here means the registry is ahead of the
+// site — show the raw id rather than dropping the screenshots on the floor.
+const PLATFORM_LABELS = { android: 'Android', ios: 'iOS', linux: 'Linux', macos: 'macOS', windows: 'Windows' };
+
+export const platformLabel = (p) => PLATFORM_LABELS[p] || p;
+
+/** Platforms this skill has screenshots for, in registry order. */
+export const screenshotPlatforms = (s) => Object.entries((s && s.screenshots) || {})
+  .filter(([, files]) => files && files.length)
+  .map(([platform]) => platform);
+
+/** Absolute, ordered screenshot URLs for one platform. */
+export const screenshotUrls = (s, platform) => (((s && s.screenshots) || {})[platform] || [])
+  .map((path) => `${REGISTRY_BASE}${path.replace(/^\/+/, '')}`);
+
+/**
+ * Best guess at the visitor's own platform, so the gallery opens on the
+ * one they'd actually be installing on. Order matters: Android user
+ * agents also say "Linux", and iPads have claimed to be Macs since
+ * iPadOS 13, so the touch check is what separates them.
+ */
+export const platformFromUserAgent = (ua = '', maxTouchPoints = 0) => {
+  const s = ua.toLowerCase();
+  if (s.includes('android')) return 'android';
+  if (/iphone|ipad|ipod/.test(s)) return 'ios';
+  if (s.includes('windows')) return 'windows';
+  if (s.includes('mac os x')) return maxTouchPoints > 1 ? 'ios' : 'macos';
+  if (s.includes('linux')) return 'linux';
+  return '';
+};
+
+/** The platform tab to open on: the visitor's own if we have shots for it. */
+export const preferredPlatform = (platforms, hint) => (platforms.includes(hint) ? hint : platforms[0] || '');
+
 export const isNet = (s) => s.type === 'assistant' || (s.capabilities || []).some((c) => NET_CAPS.has(c));
 
 export const niceName = (name) => (name || '').replace(/-/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());
@@ -41,12 +81,32 @@ export const cardHtml = (s) => `<a class="card" href="/skills/${esc(s.id)}" data
   <div class="card-foot">${priv(s)}<span class="open">View →</span></div>
 </a>`;
 
+/**
+ * The preview panel: a platform tab bar over a scrolling strip of
+ * screenshots, or the empty-state card for skills nobody has photographed
+ * yet. `platform` is the tab to show; pass what `preferredPlatform`
+ * returned. Unlike the app, the site shows every platform a skill has —
+ * a visitor on a laptop is often deciding whether to install on a phone.
+ */
+export const galleryHtml = (s, platform) => {
+  const platforms = screenshotPlatforms(s);
+  if (!platforms.length) {
+    return '<div class="d-preview"><div class="inner"><b>In-app preview</b><span>Screenshot coming soon</span></div></div>';
+  }
+  const on = preferredPlatform(platforms, platform);
+  const tabs = platforms.length > 1
+    ? `<div class="shot-tabs" role="tablist" aria-label="Platform">${platforms.map((p) => `<button class="shot-tab${p === on ? ' is-on' : ''}" role="tab" aria-selected="${p === on}" data-platform="${esc(p)}">${esc(platformLabel(p))}</button>`).join('')}</div>`
+    : '';
+  const shots = screenshotUrls(s, on).map((url, i) => `<img class="shot" src="${esc(url)}" loading="lazy" alt="${esc(niceName(s.name))} on ${esc(platformLabel(on))}, screenshot ${i + 1}">`).join('');
+  return `<div class="d-shots">${tabs}<div class="shot-strip">${shots}</div></div>`;
+};
+
 // NOTE: `v` is injected as raw HTML, not escaped — callers must pass
 // already-escaped/trusted content (e.g. esc(...) output or markup we built
 // ourselves), never a raw registry field.
 const fact = (k, v) => `<div class="fact"><span class="k">${esc(k)}</span><span class="v">${v}</span></div>`;
 
-export const detailHtml = (s) => {
+export const detailHtml = (s, platform) => {
   const net = isNet(s);
   const banner = net
     ? '<div class="priv-banner net"><span class="dot"></span><div><div class="t">Uses the network</div><div class="s">This skill reaches the internet for some tasks — only when a request needs it.</div></div></div>'
@@ -57,7 +117,7 @@ export const detailHtml = (s) => {
       <div class="d-meta"><span class="badge ${esc(s.type)}">${esc(s.type)}</span><span class="ver">v${esc(s.version)}</span><span class="ver">${esc(s.author)}</span></div>
     </div>
   </div>
-  <div class="d-preview"><div class="inner"><b>In-app preview</b><span>Screenshot coming soon</span></div></div>
+  ${galleryHtml(s, platform)}
   <div class="d-section"><h2>About this skill</h2><p class="body">${esc(s.description)}</p>${banner}</div>
   <div class="d-section"><h2>Skill detail</h2><div class="facts">
     ${fact('Author', esc(s.author))}

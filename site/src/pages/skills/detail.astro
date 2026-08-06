@@ -63,6 +63,29 @@ import Base from '../../layouts/Base.astro';
   .d-preview .inner svg{width:30px; height:30px; color:var(--sun)}
   .d-preview .inner b{color:var(--ink); font-weight:700; font-size:15px}
   .d-preview .inner span{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase}
+
+  /* Screenshot gallery. The strip scrolls sideways rather than wrapping —
+     screenshots are tall, and a wrapped grid of them pushes the whole
+     page below the fold. Tab bar only appears when a skill has shots for
+     more than one platform. */
+  .d-shots{margin-top:22px}
+  .shot-tabs{display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap}
+  .shot-tab{
+    font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--muted); background:var(--surface); border:1px solid var(--hair);
+    padding:6px 12px; border-radius:8px; cursor:pointer; transition:color .15s, border-color .15s;
+  }
+  .shot-tab:hover{color:var(--ink)}
+  .shot-tab.is-on{color:var(--sun); border-color:color-mix(in srgb,var(--sun) 45%, var(--hair))}
+  .shot-strip{
+    display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory;
+    padding-bottom:8px; scrollbar-width:thin;
+  }
+  .shot{
+    height:420px; width:auto; flex:none; scroll-snap-align:start;
+    border-radius:14px; border:1px solid var(--hair); background:var(--surface);
+  }
+  @media (max-width:560px){ .shot{height:340px} }
   .d-section{margin-top:26px}
   .d-section h2{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--sun); margin-bottom:12px}
   .d-section p.body{color:var(--ink); font-size:15px; line-height:1.62}
@@ -96,7 +119,7 @@ import Base from '../../layouts/Base.astro';
   @media (max-width:560px){ .d-hero h1{font-size:24px} }
 </style>
 <script>
-  import { idFromPath, findSkill, detailHtml } from '../../lib/skills.js';
+  import { idFromPath, findSkill, detailHtml, galleryHtml, platformFromUserAgent } from '../../lib/skills.js';
   const URL = 'https://raw.githubusercontent.com/ari-digital-assistant/ari-skills/main/index.json';
   const mount = document.getElementById('detail');
   const id = idFromPath(location.pathname);
@@ -109,7 +132,17 @@ import Base from '../../layouts/Base.astro';
         const s = findSkill(data.skills || [], id);
         if (!s) { missing(); return; }
         document.title = `${s.name} — Ari skill`;
-        mount.innerHTML = detailHtml(s);
+        mount.innerHTML = detailHtml(s, platformFromUserAgent(navigator.userAgent, navigator.maxTouchPoints));
+        // Platform tabs swap only the gallery — re-rendering the whole
+        // detail view would scroll the reader back to the top for what
+        // is meant to be a glance at another platform. Delegated because
+        // the tabs are innerHTML'd and get replaced on every switch.
+        mount.addEventListener('click', (e) => {
+          const tab = e.target.closest('.shot-tab');
+          if (!tab) return;
+          const shots = mount.querySelector('.d-shots');
+          shots.outerHTML = galleryHtml(s, tab.dataset.platform);
+        });
       })
       .catch(() => { mount.innerHTML = '<div class="skill-missing"><h1>Couldn’t load this skill</h1><p><button class="btn btn-ghost" onclick="location.reload()">Retry</button></p></div>'; });
   }
