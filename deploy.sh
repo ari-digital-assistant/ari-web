@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-# Build, assemble, sync to S3, invalidate CloudFront.
+# Build, assemble, sync to S3, publish the routing function, invalidate CloudFront.
 set -euo pipefail
 
 BUCKET="${BUCKET:-heyari-dev-static}"      # S3 bucket (eu-west-2)
 DIST_ID="${DIST_ID:-E3DZC8ECXAT4FZ}"       # CloudFront distribution id
+FUNCTION="${FUNCTION:-heyari-rewrite}"     # CloudFront Function (cf-rewrite.js)
 REGION="eu-west-2"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
@@ -26,5 +27,34 @@ aws s3 cp "$DIST/.well-known/assetlinks.json" "s3://$BUCKET/.well-known/assetlin
   --region "$REGION" --content-type 'application/json' \
   --cache-control 'public, max-age=300' --metadata-directive REPLACE
 
+# 4) The CloudFront Function that does the routing. Until this step existed,
+#    cf-rewrite.js was committed but never shipped: the /skills/<id> deep-link
+#    branch sat in the repo from 2026-07-24 with green unit tests while the LIVE
+#    function stayed on its 2026-06-15 version, so every skill detail URL 404'd
+#    against the private bucket and came back as a 403. Publishing here means
+#    the file in the repo is, by construction, the file serving traffic.
+#
+#    Skipped when they already match, so a routine content deploy doesn't churn
+#    a new function version. get-function writes the code to the path given as
+#    its positional argument, which is why the redirect looks unusual.
+LIVE_FN="$(mktemp)"
+trap 'rm -f "$LIVE_FN"' EXIT
+if aws cloudfront get-function --name "$FUNCTION" --stage LIVE "$LIVE_FN" >/dev/null 2>&1 &&
+   cmp -s "$LIVE_FN" "$HERE/cf-rewrite.js"; then
+  echo "CloudFront function $FUNCTION already matches cf-rewrite.js — skipping."
+else
+  echo "Publishing $FUNCTION from cf-rewrite.js ..."
+  ETAG="$(aws cloudfront describe-function --name "$FUNCTION" --query 'ETag' --output text)"
+  # update-function replaces the whole config, so Comment and Runtime have to be
+  # restated rather than inherited. The runtime is pinned deliberately: a bump
+  # is a language-semantics change and belongs in a reviewed commit, not in
+  # whatever AWS defaults to on the day we happen to deploy.
+  ETAG="$(aws cloudfront update-function --name "$FUNCTION" --if-match "$ETAG" \
+    --function-config Comment='directory index + /skills/<id> deep-links',Runtime=cloudfront-js-2.0 \
+    --function-code "fileb://$HERE/cf-rewrite.js" --query 'ETag' --output text)"
+  aws cloudfront publish-function --name "$FUNCTION" --if-match "$ETAG" >/dev/null
+  echo "Published $FUNCTION."
+fi
+
 aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths '/*' >/dev/null
-echo "Deployed to s3://$BUCKET and invalidated $DIST_ID."
+echo "Deployed to s3://$BUCKET, published $FUNCTION, and invalidated $DIST_ID."

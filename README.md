@@ -13,9 +13,11 @@ documentation arriving in later phases.
     (`dev.heyari.ari` + signing-cert SHA-256 fingerprints).
 - `docs/` — VitePress documentation (added in a later phase).
 - `cf-rewrite.js` — CloudFront **Function**: appends `index.html` to directory
-  paths and routes `/skills/<id>` to the detail template.
+  paths and routes `/skills/<id>` to the detail template. Published by
+  `deploy.sh`, so this file is the one serving traffic.
 - `scripts/assemble.mjs` — merges build outputs into `dist/`.
-- `deploy.sh` — builds, assembles, `aws s3 sync`, CloudFront invalidation.
+- `deploy.sh` — builds, assembles, `aws s3 sync`, publishes `cf-rewrite.js`,
+  CloudFront invalidation.
 
 ## Develop
 ```bash
@@ -33,6 +35,16 @@ BUCKET=heyari-dev-static DIST_ID=E3DZC8ECXAT4FZ ./deploy.sh
 Private S3 (`eu-west-2`) → CloudFront (HTTPS, OAC) → apex `heyari.dev` via
 Route53; ACM cert in `us-east-1`. Fully serverless (no Lambda). Design +
 runbook: `../docs/superpowers/specs/2026-07-24-heyari-dev-website-design.md`.
+
+URL routing is the `heyari-rewrite` CloudFront Function, sourced from
+`cf-rewrite.js` and published by `deploy.sh`. It was manually managed until
+2026-08-06 and drifted six weeks behind the repo, which broke every
+`/skills/<id>` deep-link with a 403 — a private bucket answers a missing key
+with "access denied", not "not found", so the symptom named the wrong problem.
+Deploying it from source is what stops that recurring. Note the bucket is
+private: any path the function fails to rewrite onto a real key surfaces as a
+403, so reach for this file first when a URL that should exist says access
+denied.
 
 ## Fingerprints (assetlinks.json)
 `sha256_cert_fingerprints` holds one entry: the **shared debug key** committed
