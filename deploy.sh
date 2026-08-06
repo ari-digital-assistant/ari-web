@@ -39,10 +39,12 @@ aws s3 cp "$DIST/.well-known/assetlinks.json" "s3://$BUCKET/.well-known/assetlin
 #    its positional argument, which is why the redirect looks unusual.
 LIVE_FN="$(mktemp)"
 trap 'rm -f "$LIVE_FN"' EXIT
+FN_ACTION="unchanged"
 if aws cloudfront get-function --name "$FUNCTION" --stage LIVE "$LIVE_FN" >/dev/null 2>&1 &&
    cmp -s "$LIVE_FN" "$HERE/cf-rewrite.js"; then
   echo "CloudFront function $FUNCTION already matches cf-rewrite.js — skipping."
 else
+  FN_ACTION="published"
   echo "Publishing $FUNCTION from cf-rewrite.js ..."
   ETAG="$(aws cloudfront describe-function --name "$FUNCTION" --query 'ETag' --output text)"
   # update-function replaces the whole config, so Comment and Runtime have to be
@@ -57,4 +59,4 @@ else
 fi
 
 aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths '/*' >/dev/null
-echo "Deployed to s3://$BUCKET, published $FUNCTION, and invalidated $DIST_ID."
+echo "Deployed to s3://$BUCKET, $FUNCTION $FN_ACTION, and invalidated $DIST_ID."
