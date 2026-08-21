@@ -5,6 +5,11 @@ const NET_CAPS = new Set(['http', 'authorize', 'media_services', 'navigation']);
 // as bundles and manifest sidecars.
 export const REGISTRY_BASE = 'https://raw.githubusercontent.com/ari-digital-assistant/ari-skills/main/';
 
+// Where the build mirrors those same paths, so loading a skill page never
+// fetches an image from GitHub. Registry-relative paths keep their shape under
+// it, which is what makes the mapping obvious in both directions.
+export const MIRROR_BASE = '/registry/';
+
 // Platform ids the registry publishes screenshots under, and how we spell
 // them for people. Anything the validator doesn't recognise never reaches
 // index.json, so an unknown id here means the registry is ahead of the
@@ -18,9 +23,19 @@ export const screenshotPlatforms = (s) => Object.entries((s && s.screenshots) ||
   .filter(([, files]) => files && files.length)
   .map(([platform]) => platform);
 
-/** Absolute, ordered screenshot URLs for one platform. */
-export const screenshotUrls = (s, platform) => (((s && s.screenshots) || {})[platform] || [])
-  .map((path) => `${REGISTRY_BASE}${path.replace(/^\/+/, '')}`);
+/**
+ * Ordered screenshot URLs for one platform, against the mirror by default.
+ * The one caller that passes REGISTRY_BASE instead is the /skills/detail
+ * fallback: it only ever renders a skill published since the last build, whose
+ * screenshots that build had no way to mirror.
+ */
+export const screenshotUrls = (s, platform, base = MIRROR_BASE) => (((s && s.screenshots) || {})[platform] || [])
+  .map((path) => `${base}${path.replace(/^\/+/, '')}`);
+
+/** Every registry-relative screenshot path a skill list references, deduped. */
+export const screenshotPaths = (skills) => [...new Set(
+  (skills || []).flatMap((s) => Object.values((s && s.screenshots) || {}).flat()),
+)].map((path) => path.replace(/^\/+/, '')).sort();
 
 /**
  * Best guess at the visitor's own platform, so the gallery opens on the
@@ -48,6 +63,22 @@ export const niceName = (name) => (name || '').replace(/-/g, ' ').replace(/\b\w/
 export const idFromPath = (pathname) => {
   const m = (pathname || '').replace(/\/+$/, '').match(/\/skills\/(.+)$/);
   return m ? m[1] : '';
+};
+
+/**
+ * A one-line description for <meta> and OG cards. Registry descriptions run to
+ * several sentences and carry newlines; unfurlers want one tidy line, cut on a
+ * word so it doesn't end mid-syllable.
+ */
+export const metaDescription = (s, max = 155) => {
+  const text = ((s && s.description) || '').replace(/\s+/g, ' ').trim();
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  // If the very next character is a space, `cut` already ends on a whole word —
+  // dropping back to the last space would throw that word away for nothing.
+  const space = cut.lastIndexOf(' ');
+  const kept = text[max] === ' ' || space <= 0 ? cut : cut.slice(0, space);
+  return `${kept.replace(/[.,;:]+$/, '')}…`;
 };
 
 export const findSkill = (skills, id) => (skills || []).find((s) => s.id === id);
@@ -88,7 +119,7 @@ export const cardHtml = (s) => `<a class="card" href="/skills/${esc(s.id)}" data
  * returned. Unlike the app, the site shows every platform a skill has —
  * a visitor on a laptop is often deciding whether to install on a phone.
  */
-export const galleryHtml = (s, platform) => {
+export const galleryHtml = (s, platform, base) => {
   const platforms = screenshotPlatforms(s);
   if (!platforms.length) {
     return '<div class="d-preview"><div class="inner"><b>In-app preview</b><span>Screenshot coming soon</span></div></div>';
@@ -97,8 +128,10 @@ export const galleryHtml = (s, platform) => {
   const tabs = platforms.length > 1
     ? `<div class="shot-tabs" role="tablist" aria-label="Platform">${platforms.map((p) => `<button class="shot-tab${p === on ? ' is-on' : ''}" role="tab" aria-selected="${p === on}" data-platform="${esc(p)}">${esc(platformLabel(p))}</button>`).join('')}</div>`
     : '';
-  const shots = screenshotUrls(s, on).map((url, i) => `<img class="shot" src="${esc(url)}" loading="lazy" alt="${esc(niceName(s.name))} on ${esc(platformLabel(on))}, screenshot ${i + 1}">`).join('');
-  return `<div class="d-shots">${tabs}<div class="shot-strip">${shots}</div></div>`;
+  const shots = screenshotUrls(s, on, base).map((url, i) => `<img class="shot" src="${esc(url)}" loading="lazy" alt="${esc(niceName(s.name))} on ${esc(platformLabel(on))}, screenshot ${i + 1}">`).join('');
+  // data-platform lets a prerendered page tell which platform the BUILD picked,
+  // so the client only swaps the gallery when the reader's own differs.
+  return `<div class="d-shots" data-platform="${esc(on)}">${tabs}<div class="shot-strip">${shots}</div></div>`;
 };
 
 // NOTE: `v` is injected as raw HTML, not escaped — callers must pass
@@ -106,7 +139,7 @@ export const galleryHtml = (s, platform) => {
 // ourselves), never a raw registry field.
 const fact = (k, v) => `<div class="fact"><span class="k">${esc(k)}</span><span class="v">${v}</span></div>`;
 
-export const detailHtml = (s, platform) => {
+export const detailHtml = (s, platform, base) => {
   const net = isNet(s);
   const banner = net
     ? '<div class="priv-banner net"><span class="dot"></span><div><div class="t">Uses the network</div><div class="s">This skill reaches the internet for some tasks — only when a request needs it.</div></div></div>'
@@ -117,7 +150,7 @@ export const detailHtml = (s, platform) => {
       <div class="d-meta"><span class="badge ${esc(s.type)}">${esc(s.type)}</span><span class="ver">v${esc(s.version)}</span><span class="ver">${esc(s.author)}</span></div>
     </div>
   </div>
-  ${galleryHtml(s, platform)}
+  ${galleryHtml(s, platform, base)}
   <div class="d-section"><h2>About this skill</h2><p class="body">${esc(s.description)}</p>${banner}</div>
   <div class="d-section"><h2>Skill detail</h2><div class="facts">
     ${fact('Author', esc(s.author))}

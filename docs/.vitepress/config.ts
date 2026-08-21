@@ -5,7 +5,7 @@ export default defineConfig({
   title: 'Ari Docs',
   description: 'Documentation for Ari — the open-source, on-device assistant.',
   base: '/docs/',
-  cleanUrls: false,
+  cleanUrls: true,
   head: [
     ['link', { rel: 'icon', href: '/docs/favicon.svg' }],
     ['meta', { name: 'theme-color', content: '#D8431C' }],

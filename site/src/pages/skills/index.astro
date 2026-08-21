@@ -6,7 +6,7 @@ import Base from '../../layouts/Base.astro';
     <div class="sec-head">
       <span class="eyebrow">Skills</span>
       <h1>A growing shelf of skills.</h1>
-      <p>Everything Ari can do is a skill — signed, open, and installable from inside the app. This list is live from the registry.</p>
+      <p>Everything Ari can do is a skill — signed, open, and installable from inside the app. This list mirrors the registry as of the last site build.</p>
     </div>
     <div class="toolbar">
       <label class="search">
@@ -112,7 +112,7 @@ import Base from '../../layouts/Base.astro';
 </style>
 <script>
   import { filterSkills, cardHtml } from '../../lib/skills.js';
-  const URL = 'https://raw.githubusercontent.com/ari-digital-assistant/ari-skills/main/index.json';
+  const URL = '/skills.json';
   const grid = document.getElementById('grid');
   const count = document.getElementById('count');
   const q = document.getElementById('q');

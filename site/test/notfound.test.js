@@ -20,4 +20,13 @@ describe('404 page', () => {
   it('has friendly not-found copy', () => {
     expect(html).toMatch(/wandered off|not here|doesn't exist|nothing here/i);
   });
+  it('references nothing relative, so it renders wherever CloudFront serves it', () => {
+    // This is the page the distribution returns for a 403/404, at whatever URL
+    // the visitor asked for — /a/b/c included. A relative href would resolve
+    // against that path and 404 in turn, leaving an unstyled error page.
+    const urls = [...html.matchAll(/(?:href|src)="([^"]*)"/g)].map((m) => m[1]);
+    expect(urls.length).toBeGreaterThan(0);
+    const relative = urls.filter((u) => !/^([a-z]+:|\/\/|\/|#)/i.test(u));
+    expect(relative).toEqual([]);
+  });
 });

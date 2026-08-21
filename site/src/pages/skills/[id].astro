@@ -1,0 +1,36 @@
+---
+import Base from '../../layouts/Base.astro';
+import SkillDetail from '../../components/SkillDetail.astro';
+import { registrySkills } from '../../lib/registry.js';
+import { niceName, metaDescription, screenshotPlatforms, screenshotUrls } from '../../lib/skills.js';
+
+// One real page per skill in the registry at build time. Before this, every
+// /skills/<id> was the same client-rendered template, so crawlers and social
+// unfurls saw a generic "Skill — Ari" title and no content at all.
+export async function getStaticPaths() {
+  const skills = await registrySkills();
+  return skills.map((skill) => ({ params: { id: skill.id }, props: { skill } }));
+}
+
+const { skill } = Astro.props;
+const title = `${niceName(skill.name)} — Ari skill`;
+const description = metaDescription(skill);
+const canonical = new URL(`/skills/${skill.id}`, Astro.site).href;
+// The first screenshot doubles as the unfurl card, served off our own mirror so
+// even the unfurler never touches GitHub. Absolute, because og:image must be.
+const platforms = screenshotPlatforms(skill);
+const image = platforms.length ? new URL(screenshotUrls(skill, platforms[0])[0], Astro.site).href : '';
+---
+<Base title={title} description={description}>
+  <Fragment slot="head">
+    <link rel="canonical" href={canonical} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Ari" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    {image && <meta property="og:image" content={image} />}
+    <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
+  </Fragment>
+  <SkillDetail skill={skill} />
+</Base>
