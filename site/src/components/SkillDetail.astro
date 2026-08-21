@@ -1,0 +1,178 @@
+---
+import { detailHtml, screenshotPlatforms, preferredPlatform } from '../lib/skills.js';
+
+// `skill` is set on the prerendered pages (one per registry entry) and absent on
+// the /skills/detail template, which is what cf-rewrite still serves for ids
+// published since the last build. Same shell, same styles, same behaviour —
+// the only difference is whether the body arrives with the HTML or after a fetch.
+const { skill } = Astro.props;
+// The build has no reader to detect a platform from, so it renders the first
+// one the registry lists; the client swaps the gallery if the reader's differs.
+const platform = skill ? preferredPlatform(screenshotPlatforms(skill), '') : '';
+// JSON can only contain `<` inside a string, so escaping it is enough to stop a
+// description ever closing the script tag early.
+const seed = skill ? JSON.stringify(skill).replace(/</g, '\\u003c') : '';
+---
+<section class="detail-page wrap">
+  <p class="back"><a href="/skills">← All skills</a></p>
+  {skill
+    ? <div id="detail" set:html={detailHtml(skill, platform)} />
+    : <div id="detail" role="status">Loading…</div>}
+  {skill && <script type="application/json" id="skill-data" set:html={seed} />}
+</section>
+<style>
+  /* Scoped page styles — build-time shell elements only. Everything
+     `detailHtml()` renders is injected at runtime via innerHTML, so it lives
+     in the `is:global` block below instead (see the comment there). */
+  .detail-page{padding-block:60px 96px; max-width:720px}
+  .back{margin-bottom:20px}
+  .back a{
+    font-family:var(--mono); font-size:13px; color:var(--muted); font-weight:500;
+    display:inline-flex; align-items:center; gap:4px; transition:color .15s;
+  }
+  .back a:hover{color:var(--sun)}
+</style>
+<style is:global>
+  /* Global (not scoped) on purpose: detailHtml() (src/lib/skills.js) injects
+     the whole detail view into #detail at runtime via innerHTML, after
+     Astro has already stamped its scoped-CSS `data-astro-cid-*` attribute
+     pass over the build-time DOM. Runtime-injected elements never get that
+     attribute, so scoped rules would silently never match — the detail view
+     would render but stay completely unstyled (see Task 2's card-styling
+     bug for the same trap). Ported verbatim from
+     docs/design-reference/dusk-mockup.html's #drawer section, with two
+     adaptations to match what detailHtml() actually emits: the mockup uses
+     `.d-hero h2` / `.d-section > h3` for the skill name / section headings,
+     but detailHtml() renders `<h1>` / `<h2>` there instead, so the selectors
+     below target h1/h2 to match. The mockup's `.d-icon` has no corresponding
+     element in detailHtml() output today, but is kept here (harmless,
+     unused) so it's ready if an icon is added later.
+
+     Also included here: the shared chips `.badge`/`.caps`/`.cap`/`.priv`
+     that detailHtml() reuses from the card markup. Each page's `is:global`
+     CSS only ships on that page, so Task 2's /skills grid copy of these
+     rules does not reach this page — they have to be duplicated here too. */
+  .badge{font-family:var(--mono); font-size:10.5px; font-weight:600; letter-spacing:.08em; text-transform:uppercase; padding:5px 9px; border-radius:7px; white-space:nowrap; flex:none}
+  .badge.skill{background:color-mix(in srgb,var(--sun) 16%, var(--surface)); color:var(--sun)}
+  .badge.assistant{background:color-mix(in srgb,var(--plum) 20%, var(--surface)); color:var(--plum)}
+  .caps{display:flex; gap:6px; flex-wrap:wrap}
+  .cap{font-family:var(--mono); font-size:11px; color:var(--ink); background:var(--surface-2); border:1px solid var(--hair); padding:3px 8px; border-radius:7px}
+  .priv{display:flex; align-items:center; gap:7px; font-family:var(--mono); font-size:11px; letter-spacing:.02em}
+  .priv .dot{width:7px; height:7px; border-radius:50%; flex:none}
+  .priv.local{color:var(--on-device)} .priv.local .dot{background:var(--on-device)}
+  .priv.net{color:var(--network)} .priv.net .dot{background:var(--network)}
+
+  .d-hero{display:flex; align-items:flex-start; gap:16px; margin-top:12px}
+  .d-icon{width:60px; height:60px; border-radius:16px; flex:none; display:grid; place-items:center; background:var(--surface); border:1px solid var(--hair); box-shadow:0 0 30px -8px var(--glow)}
+  .d-icon svg{width:34px; height:34px}
+  .d-hero h1{font-size:32px; letter-spacing:-.03em; text-transform:capitalize}
+  .d-hero .id{font-family:var(--mono); font-size:12px; color:var(--muted); margin-top:5px; word-break:break-all}
+  .d-meta{display:flex; align-items:center; gap:8px; margin-top:10px; flex-wrap:wrap}
+  .ver{font-family:var(--mono); font-size:11px; color:var(--muted); border:1px solid var(--hair); padding:3px 8px; border-radius:7px}
+  .d-preview{margin-top:22px; border-radius:16px; overflow:hidden; border:1px solid var(--hair);
+    background:linear-gradient(160deg, color-mix(in srgb,var(--surface) 72%, var(--amber)) 0%, var(--surface) 60%);
+    aspect-ratio:16/10; display:grid; place-items:center; text-align:center}
+  .d-preview .inner{display:flex; flex-direction:column; align-items:center; gap:10px; color:var(--muted)}
+  .d-preview .inner svg{width:30px; height:30px; color:var(--sun)}
+  .d-preview .inner b{color:var(--ink); font-weight:700; font-size:15px}
+  .d-preview .inner span{font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase}
+
+  /* Screenshot gallery. The strip scrolls sideways rather than wrapping —
+     screenshots are tall, and a wrapped grid of them pushes the whole
+     page below the fold. Tab bar only appears when a skill has shots for
+     more than one platform. */
+  .d-shots{margin-top:22px}
+  .shot-tabs{display:flex; gap:6px; margin-bottom:12px; flex-wrap:wrap}
+  .shot-tab{
+    font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--muted); background:var(--surface); border:1px solid var(--hair);
+    padding:6px 12px; border-radius:8px; cursor:pointer; transition:color .15s, border-color .15s;
+  }
+  .shot-tab:hover{color:var(--ink)}
+  .shot-tab.is-on{color:var(--sun); border-color:color-mix(in srgb,var(--sun) 45%, var(--hair))}
+  .shot-strip{
+    display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory;
+    padding-bottom:8px; scrollbar-width:thin;
+  }
+  .shot{
+    height:420px; width:auto; flex:none; scroll-snap-align:start;
+    border-radius:14px; border:1px solid var(--hair); background:var(--surface);
+  }
+  @media (max-width:560px){ .shot{height:340px} }
+  .d-section{margin-top:26px}
+  .d-section h2{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--sun); margin-bottom:12px}
+  .d-section p.body{color:var(--ink); font-size:15px; line-height:1.62}
+  .facts{border:1px solid var(--hair); border-radius:14px; overflow:hidden; background:var(--surface)}
+  .fact{display:flex; justify-content:space-between; gap:16px; padding:13px 16px; border-bottom:1px solid var(--hair); font-size:14px}
+  .fact:last-child{border-bottom:none}
+  .fact .k{color:var(--muted); font-family:var(--mono); font-size:12px; letter-spacing:.03em}
+  .fact .v{color:var(--ink); font-weight:600; text-align:right}
+  .fact .v .caps-list{display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; font-weight:400}
+  .priv-banner{display:flex; gap:12px; align-items:flex-start; padding:15px 16px; border-radius:14px; margin-top:14px}
+  .priv-banner.local{background:color-mix(in srgb,var(--on-device) 12%, var(--surface)); border:1px solid color-mix(in srgb,var(--on-device) 30%, transparent)}
+  .priv-banner.net{background:color-mix(in srgb,var(--network) 12%, var(--surface)); border:1px solid color-mix(in srgb,var(--network) 30%, transparent)}
+  .priv-banner .dot{width:9px; height:9px; border-radius:50%; margin-top:5px; flex:none}
+  .priv-banner.local .dot{background:var(--on-device)} .priv-banner.net .dot{background:var(--network)}
+  .priv-banner .t{font-weight:700; font-size:14px}
+  .priv-banner .s{color:var(--muted); font-size:13px; margin-top:2px}
+  .d-note{
+    margin-top:26px; font-family:var(--mono); font-size:12.5px; line-height:1.6; color:var(--muted);
+    border:1px dashed var(--hair); border-radius:14px; padding:16px 18px;
+  }
+  .d-note .sub{display:block; margin-top:8px}
+  .d-actions{display:flex; gap:12px; margin-top:28px}
+  .d-actions .btn{flex:1; justify-content:center}
+
+  .skill-missing{text-align:center; padding:64px 0; display:flex; flex-direction:column; align-items:center; gap:14px}
+  .skill-missing h1{font-size:clamp(28px,4vw,38px)}
+  .skill-missing p{color:var(--muted); max-width:46ch}
+  .skill-missing a{color:var(--sun); font-weight:600}
+  .skill-missing a:hover{text-decoration:underline; text-underline-offset:3px}
+
+  @media (max-width:560px){ .d-hero h1{font-size:24px} }
+</style>
+<script>
+  import { idFromPath, findSkill, detailHtml, galleryHtml, screenshotPlatforms, preferredPlatform, platformFromUserAgent, REGISTRY_BASE } from '../lib/skills.js';
+  const mount = document.getElementById('detail');
+  const seed = document.getElementById('skill-data');
+  const platform = platformFromUserAgent(navigator.userAgent, navigator.maxTouchPoints);
+  const missing = () => { mount.innerHTML = '<div class="skill-missing"><h1>Skill not found</h1><p>That skill isn’t in the registry (yet). <a href="/skills">Browse all skills →</a></p></div>'; };
+
+  // Platform tabs swap only the gallery — re-rendering the whole detail view
+  // would scroll the reader back to the top for what is meant to be a glance at
+  // another platform. Delegated because the tabs are innerHTML'd and get
+  // replaced on every switch.
+  const wireTabs = (s, base) => mount.addEventListener('click', (e) => {
+    const tab = e.target.closest('.shot-tab');
+    if (!tab) return;
+    mount.querySelector('.d-shots').outerHTML = galleryHtml(s, tab.dataset.platform, base);
+  });
+
+  if (seed) {
+    const s = JSON.parse(seed.textContent);
+    wireTabs(s);
+    const shots = mount.querySelector('.d-shots');
+    const want = preferredPlatform(screenshotPlatforms(s), platform);
+    if (shots && want && shots.dataset.platform !== want) shots.outerHTML = galleryHtml(s, want);
+  } else {
+    const id = idFromPath(location.pathname);
+    if (!id) { missing(); } else {
+      // Deliberately the live registry, NOT the same-origin /skills.json mirror:
+      // this page is only ever served for an id with no prerendered page, which
+      // means it was published after the build the mirror came from. The mirror
+      // could not know about it. Every other route reads the mirror.
+      fetch(`${REGISTRY_BASE}index.json`)
+        .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
+        .then((data) => {
+          const s = findSkill(data.skills || [], id);
+          if (!s) { missing(); return; }
+          document.title = `${s.name} — Ari skill`;
+          // Registry, not mirror: this skill is newer than the build, so its
+          // screenshots were never copied in either.
+          mount.innerHTML = detailHtml(s, platform, REGISTRY_BASE);
+          wireTabs(s, REGISTRY_BASE);
+        })
+        .catch(() => { mount.innerHTML = '<div class="skill-missing"><h1>Couldn’t load this skill</h1><p><button class="btn btn-ghost" onclick="location.reload()">Retry</button></p></div>'; });
+    }
+  }
+</script>

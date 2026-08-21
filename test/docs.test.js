@@ -1,4 +1,4 @@
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync, existsSync, readdirSync } from 'node:fs';
 import { describe, it, expect, beforeAll } from 'vitest';
 import { execSync } from 'node:child_process';
 
@@ -46,5 +46,53 @@ describe('develop section', () => {
   });
   it('first-skill example manifest includes the required engine field', () => {
     expect(read('develop/first-skill.html')).toMatch(/engine/);
+  });
+});
+
+describe('pretty docs URLs', () => {
+  // cleanUrls links pages without .html but VitePress still writes flat .html
+  // files, so the routing rule and the build output have to agree exactly.
+  // Rather than restate a few paths by hand, walk every internal link the
+  // build actually emitted and resolve it the way CloudFront will.
+  const fnSrc = readFileSync(new URL('../cf-rewrite.js', import.meta.url), 'utf8');
+  const handler = new Function(fnSrc + '\nreturn handler;')();
+  const distRoot = new URL('../docs/.vitepress/dist/', import.meta.url);
+
+  const htmlFiles = (dir, prefix = '') => readdirSync(new URL(dir, distRoot), { withFileTypes: true })
+    .flatMap((e) => (e.isDirectory()
+      ? htmlFiles(`${dir}${e.name}/`, `${prefix}${e.name}/`)
+      : e.name.endsWith('.html') ? [`${prefix}${e.name}`] : []));
+
+  const resolve = (uri) => {
+    const res = handler({ request: { uri } });
+    return res.uri ?? handler({ request: { uri: res.headers.location.value } }).uri;
+  };
+
+  it('config keeps cleanUrls on', () => {
+    expect(readFileSync(new URL('../docs/.vitepress/config.ts', import.meta.url), 'utf8'))
+      .toMatch(/cleanUrls:\s*true/);
+  });
+
+  it('emits extension-less links, not .html ones', () => {
+    const html = read('using/getting-started.html');
+    expect(html).toContain('href="/docs/using/wake-word"');
+    expect(html).not.toContain('href="/docs/using/wake-word.html"');
+  });
+
+  it('every internal docs link the build emitted resolves to a real file', () => {
+    const pages = htmlFiles('./');
+    expect(pages.length).toBeGreaterThan(0);
+    const links = new Set();
+    for (const page of pages) {
+      for (const m of read(page).matchAll(/href="(\/docs\/[^"#?]*)"/g)) links.add(m[1]);
+    }
+    // Sanity: the walk found the real nav, not an empty set that trivially passes.
+    expect(links.has('/docs/using/getting-started')).toBe(true);
+    expect(links.has('/docs/develop/')).toBe(true);
+
+    const broken = [...links]
+      .map((href) => [href, resolve(href)])
+      .filter(([, uri]) => !existsSync(new URL(`.${uri.slice('/docs'.length)}`, distRoot)));
+    expect(broken).toEqual([]);
   });
 });

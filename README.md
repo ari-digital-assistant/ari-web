@@ -46,6 +46,25 @@ private: any path the function fails to rewrite onto a real key surfaces as a
 403, so reach for this file first when a URL that should exist says access
 denied.
 
+**Custom error responses** map both 403 and 404 to `/404.html` with a 404
+status, which is what makes the branded 404 page reachable — until 2026-08-21
+the distribution had none configured, so every mistyped URL returned S3's
+`AccessDenied` XML and the page that had been building since Phase 1 was never
+served to anyone. This is distribution config, not something `deploy.sh`
+publishes, so it is set once:
+
+```bash
+aws cloudfront get-distribution-config --id E3DZC8ECXAT4FZ \
+  --query 'DistributionConfig.CustomErrorResponses'
+```
+
+Two consequences worth knowing. A genuine origin permission failure now renders
+the 404 page rather than surfacing as a 403, because a private bucket gives
+CloudFront no way to tell "missing" from "forbidden" — check the bucket policy
+and OAC if pages that should exist start 404ing en masse. And `/docs/*` errors
+get this page too, not VitePress's own 404, since error responses are
+distribution-wide and cannot vary per path.
+
 ## Fingerprints (assetlinks.json)
 `sha256_cert_fingerprints` holds one entry: the **shared debug key** committed
 at `ari-android/app/debug.keystore`. Every machine and CI runner signs debug

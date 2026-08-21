@@ -12,6 +12,7 @@ const { title, description = 'The open-source assistant that never phones home.'
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" />
+    <slot name="head" />
   </head>
   <body>
     <Nav />

@@ -5,6 +5,10 @@ import { describe, it, expect } from 'vitest';
 const src = readFileSync(new URL('../cf-rewrite.js', import.meta.url), 'utf8');
 const handler = new Function(src + '\nreturn handler;')();
 const run = (uri) => handler({ request: { uri } }).uri;
+const redirect = (uri) => {
+  const res = handler({ request: { uri } });
+  return { status: res.statusCode, to: res.headers.location.value };
+};
 
 describe('cf-rewrite CloudFront Function', () => {
   it('rewrites a dotted skill deep-link to the detail template', () => {
@@ -32,8 +36,39 @@ describe('cf-rewrite CloudFront Function', () => {
     expect(run('/features')).toBe('/features/index.html');
     expect(run('/privacy/')).toBe('/privacy/index.html');
   });
+  it('maps a clean docs URL onto the flat .html file VitePress emits', () => {
+    // cleanUrls only changes how VitePress LINKS pages — the build still writes
+    // using/getting-started.html, so the dir-index rule would ask S3 for
+    // using/getting-started/index.html and get a 403 off the private bucket.
+    expect(run('/docs/using/getting-started')).toBe('/docs/using/getting-started.html');
+    expect(run('/docs/develop/first-skill')).toBe('/docs/develop/first-skill.html');
+  });
+  it('still serves the docs section indexes, which really are index.html', () => {
+    expect(run('/docs')).toBe('/docs/index.html');
+    expect(run('/docs/')).toBe('/docs/index.html');
+    expect(run('/docs/develop/')).toBe('/docs/develop/index.html');
+  });
+  it('301s the pre-cleanUrls .html spellings onto the pretty ones', () => {
+    // The flat files are still in the bucket, so these would otherwise serve a
+    // 200 at a second URL for the same page.
+    expect(redirect('/docs/using/skills.html')).toEqual({ status: 301, to: '/docs/using/skills' });
+    expect(redirect('/docs/index.html')).toEqual({ status: 301, to: '/docs/' });
+    expect(redirect('/docs/develop/index.html')).toEqual({ status: 301, to: '/docs/develop/' });
+  });
+  it('leaves docs assets alone — they already have extensions', () => {
+    expect(run('/docs/assets/style.DD-ZdeMm.css')).toBe('/docs/assets/style.DD-ZdeMm.css');
+    expect(run('/docs/vp-icons.css')).toBe('/docs/vp-icons.css');
+    expect(run('/docs/favicon.svg')).toBe('/docs/favicon.svg');
+  });
   it('leaves fingerprinted asset files untouched', () => {
     expect(run('/_astro/app.a1b2c3.css')).toBe('/_astro/app.a1b2c3.css');
     expect(run('/.well-known/assetlinks.json')).toBe('/.well-known/assetlinks.json');
+  });
+  it('serves the mirrored registry straight off the bucket', () => {
+    // The screenshot mirror and the index mirror are plain keys; nothing here
+    // should touch them, least of all the /skills/<id> branch.
+    expect(run('/registry/screenshots/dev.heyari.timer-0.2.0/android/01-timer.webp'))
+      .toBe('/registry/screenshots/dev.heyari.timer-0.2.0/android/01-timer.webp');
+    expect(run('/skills.json')).toBe('/skills.json');
   });
 });
