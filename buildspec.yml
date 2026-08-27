@@ -17,6 +17,12 @@ version: 0.2
 # them the deploy fails at that step rather than silently skipping it — which
 # is the point: the routing function drifted six weeks behind the repo once
 # already, and a deploy that can't publish it should say so loudly.
+#
+#   lambda:UpdateFunctionCode, lambda:GetFunction  on  the heyari-report
+#                                                      function (eu-west-2)
+# Those ship the /api/report handler. The function itself is created by
+# infra/provision-report-api.sh, which is NOT run by CI — this pipeline only
+# ever updates code on infrastructure that already exists.
 # Use a CodeBuild image with Node 22 (aws/codebuild/standard:7.0 or later).
 
 env:

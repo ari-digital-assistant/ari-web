@@ -1,0 +1,11 @@
+{
+  "name": "@ari-web/report-fn",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "description": "Lambda behind /api/report — emails an in-app content report to the maintainer.",
+  "main": "index.mjs",
+  "dependencies": {
+    "@aws-sdk/client-sesv2": "3.1119.0"
+  }
+}
