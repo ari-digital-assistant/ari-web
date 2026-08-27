@@ -10,6 +10,11 @@ export const MAX_BODY_BYTES = 16 * 1024;
 
 export const CATEGORIES = ['offensive', 'harmful', 'wrong', 'other'];
 
+// What is being reported. A skill report names a skill in the store rather
+// than something Ari said, and the email has to say which — labelling a skill
+// name as "Reported response" would read as a quote it never was.
+export const KINDS = ['response', 'skill'];
+
 // Per-field caps. The app's dialog shows the user the whole payload before it
 // sends, so these are a backstop against a crafted request rather than a limit
 // real users will meet.
@@ -29,9 +34,13 @@ export function validate(raw) {
   if (!text) return { ok: false, reason: 'text is required' };
   if (!CATEGORIES.includes(raw.category)) return { ok: false, reason: 'unknown category' };
 
+  const kind = raw.kind ?? 'response';
+  if (!KINDS.includes(kind)) return { ok: false, reason: 'unknown kind' };
+
   return {
     ok: true,
     report: {
+      kind,
       category: raw.category,
       text,
       // Optional throughout: the dialog lets the user withhold the prompt, and
@@ -45,15 +54,20 @@ export function validate(raw) {
 }
 
 export function formatEmail(report, receivedAt) {
-  const subject = `[Ari report] ${report.category}${report.skillId ? ` — ${report.skillId}` : ''}`;
+  const isSkill = report.kind === 'skill';
+  const subject =
+    `[Ari ${isSkill ? 'skill report' : 'report'}] ${report.category}` +
+    (report.skillId ? ` — ${report.skillId}` : '');
+  const heading = isSkill ? 'Reported skill' : 'Reported response';
   const lines = [
+    `Kind:        ${report.kind}`,
     `Category:    ${report.category}`,
     `Skill:       ${report.skillId ?? '(not recorded)'}`,
     `App version: ${report.appVersion ?? '(not recorded)'}`,
     `Received:    ${receivedAt}`,
     '',
-    'Reported response',
-    '-----------------',
+    heading,
+    '-'.repeat(heading.length),
     report.text,
   ];
   if (report.prompt) {

@@ -4,6 +4,7 @@ import {
   formatEmail,
   originSecretOk,
   CATEGORIES,
+  KINDS,
   MAX_BODY_BYTES,
 } from '../functions/report/index.mjs';
 
@@ -156,5 +157,42 @@ describe('origin secret', () => {
     // Lets the function run locally and under test without one.
     expect(originSecretOk({}, undefined)).toBe(true);
     expect(originSecretOk({}, '')).toBe(true);
+  });
+});
+
+describe('report kind', () => {
+  const at = '2026-08-27T10:00:00.000Z';
+
+  it('defaults to a response report', () => {
+    expect(validate(good).report.kind).toBe('response');
+  });
+
+  it('accepts a skill report', () => {
+    expect(validate({ ...good, kind: 'skill' }).report.kind).toBe('skill');
+  });
+
+  it('rejects an unknown kind', () => {
+    expect(validate({ ...good, kind: 'nonsense' })).toEqual({ ok: false, reason: 'unknown kind' });
+  });
+
+  it('offers exactly the two kinds', () => {
+    expect(KINDS).toEqual(['response', 'skill']);
+  });
+
+  it('labels a skill report as a skill, not a quote', () => {
+    // Calling a skill name "Reported response" would read as something Ari
+    // said, which is the one thing it is not.
+    const { report } = validate({ ...good, kind: 'skill', skillId: 'dev.heyari.timer' });
+    const email = formatEmail(report, at);
+    expect(email.subject).toBe('[Ari skill report] offensive — dev.heyari.timer');
+    expect(email.body).toContain('Reported skill');
+    expect(email.body).not.toContain('Reported response');
+    expect(email.body).toContain('Kind:        skill');
+  });
+
+  it('leaves a response report reading as before', () => {
+    const email = formatEmail(validate(good).report, at);
+    expect(email.subject).toBe('[Ari report] offensive');
+    expect(email.body).toContain('Reported response');
   });
 });
