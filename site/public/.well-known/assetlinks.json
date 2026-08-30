@@ -5,7 +5,8 @@
       "namespace": "android_app",
       "package_name": "dev.heyari.ari",
       "sha256_cert_fingerprints": [
-        "9E:B9:BE:F9:4A:1B:C4:13:34:6C:38:7D:2F:C3:03:F1:35:47:0A:D5:9E:0E:A5:B3:CF:90:17:CB:7D:C3:95:EB"
+        "9E:B9:BE:F9:4A:1B:C4:13:34:6C:38:7D:2F:C3:03:F1:35:47:0A:D5:9E:0E:A5:B3:CF:90:17:CB:7D:C3:95:EB",
+        "17:39:84:77:CD:A8:12:6D:DB:3D:38:82:63:65:C2:2F:2B:31:90:31:F6:F5:32:0F:4E:39:68:2B:5F:A7:E3:46"
       ]
     }
   }
