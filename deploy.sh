@@ -6,6 +6,7 @@ BUCKET="${BUCKET:-heyari-dev-static}"      # S3 bucket (eu-west-2)
 DIST_ID="${DIST_ID:-E3DZC8ECXAT4FZ}"       # CloudFront distribution id
 FUNCTION="${FUNCTION:-heyari-rewrite}"     # CloudFront Function (cf-rewrite.js)
 REPORT_FN="${REPORT_FN:-heyari-report}"    # /api/report Lambda (functions/report)
+BUGREPORT_FN="${BUGREPORT_FN:-heyari-bugreport}"  # /api/bug Lambda (functions/bugreport)
 REGION="eu-west-2"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
@@ -90,6 +91,19 @@ if aws lambda get-function --function-name "$REPORT_FN" --region "$REGION" >/dev
   echo "Shipped $REPORT_FN."
 else
   echo "No $REPORT_FN function in $REGION — skipping (run infra/provision-report-api.sh)."
+fi
+
+# 6) The /api/bug Lambda. Same reasoning as step 5, and the same "infrastructure
+#    is not created here" rule — infra/provision-bug-api.sh owns the bucket, the
+#    table, the function and the API routes.
+if aws lambda get-function --function-name "$BUGREPORT_FN" --region "$REGION" >/dev/null 2>&1; then
+  ZIP="$("$HERE/scripts/package-bugreport-fn.mjs")"
+  aws lambda update-function-code --function-name "$BUGREPORT_FN" --region "$REGION" \
+    --zip-file "fileb://$ZIP" >/dev/null
+  aws lambda wait function-updated-v2 --function-name "$BUGREPORT_FN" --region "$REGION"
+  echo "Shipped $BUGREPORT_FN handler code."
+else
+  echo "No $BUGREPORT_FN function in $REGION — skipping (run infra/provision-bug-api.sh)."
 fi
 
 aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths '/*' >/dev/null

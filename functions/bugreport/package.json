@@ -1,0 +1,15 @@
+{
+  "name": "@ari-web/bugreport-fn",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "description": "Lambda behind /api/bug — takes an in-app bug report, holds its attachments privately in S3, and files the public issue.",
+  "main": "index.mjs",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.1119.0",
+    "@aws-sdk/client-s3": "3.1119.0",
+    "@aws-sdk/client-secrets-manager": "3.1119.0",
+    "@aws-sdk/lib-dynamodb": "3.1119.0",
+    "@aws-sdk/s3-request-presigner": "3.1119.0"
+  }
+}
