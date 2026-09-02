@@ -1,6 +1,7 @@
 import {
   S3Client,
   PutObjectCommand,
+  GetObjectCommand,
   HeadObjectCommand,
   DeleteObjectsCommand,
   ListObjectsV2Command,
@@ -13,6 +14,7 @@ import {
   PutCommand,
   UpdateCommand,
   DeleteCommand,
+  ScanCommand,
 } from '@aws-sdk/lib-dynamodb';
 import { SecretsManagerClient, GetSecretValueCommand } from '@aws-sdk/client-secrets-manager';
 
@@ -40,6 +42,20 @@ import {
   updateIssue,
   issueComments,
 } from './github.mjs';
+import {
+  SESSION_COOKIE,
+  SESSION_TTL_SECONDS,
+  STATE_COOKIE,
+  STATE_TTL_SECONDS,
+  authorizeUrl,
+  clearCookie,
+  cookie,
+  mayReadReports,
+  newNonce,
+  parseCookies,
+  sign,
+  verify,
+} from './auth.mjs';
 
 const REGION = process.env.AWS_REGION;
 const BUCKET = process.env.BUCKET;
@@ -47,6 +63,14 @@ const TABLE = process.env.TABLE;
 const SECRET_ID = process.env.SECRET_ID;
 const REPO = process.env.REPO;
 const REPORTS_BASE_URL = process.env.REPORTS_BASE_URL ?? 'https://heyari.dev/reports';
+const SITE = process.env.SITE_URL ?? 'https://heyari.dev';
+const SESSION_SECRET = process.env.SESSION_SECRET;
+const OAUTH_CLIENT_ID = process.env.OAUTH_CLIENT_ID;
+const OAUTH_CLIENT_SECRET = process.env.OAUTH_CLIENT_SECRET;
+const CALLBACK_URL = `${SITE}/api/bug/auth/callback`;
+
+/** Long enough to open a screenshot or play a clip, short enough to be useless later. */
+const ASSET_URL_TTL = 15 * 60;
 
 const s3 = new S3Client({ region: REGION });
 const ddb = DynamoDBDocumentClient.from(new DynamoDBClient({ region: REGION }));
@@ -288,14 +312,167 @@ async function deleteReport(id, token) {
   return reply(204);
 }
 
+/** A browser redirect, with any cookies the step needs to set. */
+const redirect = (location, cookies = []) => ({
+  statusCode: 302,
+  headers: { location },
+  cookies,
+});
+
+/**
+ * Sends the maintainer to GitHub, carrying a signed nonce that has to come
+ * back with them. Without it, anyone could feed our own callback a code they
+ * obtained elsewhere.
+ */
+function authStart() {
+  const nonce = newNonce();
+  const exp = Math.floor(Date.now() / 1000) + STATE_TTL_SECONDS;
+  const state = sign(SESSION_SECRET, { nonce, exp });
+  return redirect(authorizeUrl(OAUTH_CLIENT_ID, CALLBACK_URL, state), [
+    cookie(STATE_COOKIE, state, STATE_TTL_SECONDS),
+  ]);
+}
+
+async function authCallback(event) {
+  const query = event.queryStringParameters ?? {};
+  const cookies = parseCookies((event.headers?.cookie ?? event.headers?.Cookie) || '');
+
+  // The state has to be both signed by us and the one this browser was given.
+  // Either alone is forgeable by somebody who can make a victim's browser
+  // follow a link.
+  if (!query.state || query.state !== cookies[STATE_COOKIE] ||
+      !verify(SESSION_SECRET, query.state)) {
+    return errorReply(400, 'that sign-in did not come from here');
+  }
+  if (!query.code) return errorReply(400, 'no authorization code');
+
+  const exchange = await fetch('https://github.com/login/oauth/access_token', {
+    method: 'POST',
+    headers: { accept: 'application/json', 'content-type': 'application/json' },
+    body: JSON.stringify({
+      client_id: OAUTH_CLIENT_ID,
+      client_secret: OAUTH_CLIENT_SECRET,
+      code: query.code,
+      redirect_uri: CALLBACK_URL,
+    }),
+  });
+  const token = (await exchange.json().catch(() => ({})))?.access_token;
+  if (!token) return errorReply(401, 'GitHub would not issue a token');
+
+  const headers = {
+    authorization: `Bearer ${token}`,
+    accept: 'application/vnd.github+json',
+    'user-agent': 'ari-bugbot',
+  };
+  const [me, repo] = await Promise.all([
+    fetch('https://api.github.com/user', { headers }).then((r) => r.json()),
+    fetch(`https://api.github.com/repos/${REPO}`, { headers }).then((r) => r.json()),
+  ]);
+
+  if (!mayReadReports(repo)) {
+    // Deliberately not "you are not a maintainer": whoever this is does not
+    // need to learn what the bar was.
+    return redirect(`${SITE}/reports/?denied=1`, [clearCookie(STATE_COOKIE)]);
+  }
+
+  const exp = Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS;
+  const session = sign(SESSION_SECRET, { login: me?.login ?? 'unknown', exp });
+  return redirect(`${SITE}/reports/`, [
+    cookie(SESSION_COOKIE, session, SESSION_TTL_SECONDS),
+    clearCookie(STATE_COOKIE),
+  ]);
+}
+
+/** The signed-in maintainer, or null. */
+function session(event) {
+  const cookies = parseCookies((event.headers?.cookie ?? event.headers?.Cookie) || '');
+  return verify(SESSION_SECRET, cookies[SESSION_COOKIE]);
+}
+
+async function listReports() {
+  const res = await ddb.send(new ScanCommand({
+    TableName: TABLE,
+    FilterExpression: 'begins_with(pk, :prefix)',
+    ExpressionAttributeValues: { ':prefix': 'report#' },
+  }));
+  const reports = (res.Items ?? [])
+    .map((item) => ({
+      reportId: item.id,
+      state: item.state,
+      createdAt: item.createdAt,
+      issueNumber: item.issueNumber ?? null,
+      issueUrl: item.issueUrl ?? null,
+      description: item.report?.description ?? '',
+      device: `${item.report?.device?.model ?? '?'} · Android ${item.report?.device?.androidVersion ?? '?'}`,
+      appVersion: item.report?.app?.version ?? null,
+      attachments: (item.report?.attachments ?? []).map((a) => a.kind),
+      hasPrivateNote: Boolean(item.report?.privateNote),
+      expiresAt: item.expires ?? null,
+    }))
+    .sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  return reply(200, { reports });
+}
+
+async function readReport(id) {
+  const item = await loadReport(id);
+  if (!item) return errorReply(404, 'no such report');
+
+  const keys = [
+    ...(item.report?.privateNote ? [`reports/${id}/private-note.txt`] : []),
+    ...(item.report?.attachments ?? []).map((a) => objectKey(id, a.kind)),
+  ];
+  const files = await Promise.all(keys.map(async (key) => ({
+    name: key.split('/').pop(),
+    url: await getSignedUrl(s3, new GetObjectCommand({ Bucket: BUCKET, Key: key }), {
+      expiresIn: ASSET_URL_TTL,
+    }),
+  })));
+
+  return reply(200, {
+    reportId: id,
+    state: item.state,
+    createdAt: item.createdAt,
+    issueNumber: item.issueNumber ?? null,
+    issueUrl: item.issueUrl ?? null,
+    report: item.report,
+    files,
+    urlsExpireIn: ASSET_URL_TTL,
+  });
+}
+
 export const handler = async (event) => {
   if (!originSecretOk(event?.headers, process.env.ORIGIN_SECRET)) {
     return errorReply(401, 'not from the front door');
   }
-  if (event?.requestContext?.http?.method !== 'POST') return errorReply(405, 'POST only');
 
-  const target = route(event.requestContext.http.path ?? '');
+  const target = route(event?.requestContext?.http?.path ?? '');
   if (!target) return errorReply(404, 'no such endpoint');
+
+  const method = event.requestContext.http.method;
+  if (method !== target.method) return errorReply(405, `${target.method} only`);
+
+  // Everything a maintainer can reach is behind a session; everything the app
+  // reaches is not, because the app has no way to hold one.
+  if (target.method === 'GET' && target.action.startsWith('auth') === false) {
+    if (!session(event)) return errorReply(401, 'sign in first');
+  }
+
+  // The two halves never share a path, so they never share a fall-through
+  // either: a GET returns from inside this block or not at all.
+  if (target.method === 'GET') {
+    try {
+      if (target.action === 'auth-start') return authStart();
+      if (target.action === 'auth-callback') return await authCallback(event);
+      if (target.action === 'auth-logout') {
+        return redirect(`${SITE}/reports/`, [clearCookie(SESSION_COOKIE)]);
+      }
+      if (target.action === 'list-reports') return await listReports();
+      return await readReport(target.id);
+    } catch (err) {
+      console.error(`bug report ${target.action} failed`, err);
+      return errorReply(502, 'could not process the request');
+    }
+  }
 
   const raw = event.isBase64Encoded
     ? Buffer.from(event.body ?? '', 'base64').toString('utf8')

@@ -267,13 +267,17 @@ describe('identifiers and keys', () => {
 
 describe('routing', () => {
   it('recognises the three endpoints', () => {
-    expect(route('/api/bug')).toEqual({ action: 'create' });
-    expect(route('/api/bug/r_abc/finalise')).toEqual({ action: 'finalise', id: 'r_abc' });
-    expect(route('/api/bug/r_abc/delete')).toEqual({ action: 'delete', id: 'r_abc' });
+    expect(route('/api/bug')).toEqual({ action: 'create', method: 'POST' });
+    expect(route('/api/bug/r_abc/finalise')).toEqual({
+      action: 'finalise', id: 'r_abc', method: 'POST',
+    });
+    expect(route('/api/bug/r_abc/delete')).toEqual({
+      action: 'delete', id: 'r_abc', method: 'POST',
+    });
   });
 
   it('tolerates a trailing slash', () => {
-    expect(route('/api/bug/')).toEqual({ action: 'create' });
+    expect(route('/api/bug/')).toEqual({ action: 'create', method: 'POST' });
   });
 
   it('refuses anything else, including the other function\'s path', () => {

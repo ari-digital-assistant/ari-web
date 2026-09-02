@@ -11,7 +11,7 @@
 // caller can capture the path with a plain command substitution.
 
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, copyFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, copyFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -24,9 +24,17 @@ const zip = join(stage, 'bugreport-fn.zip');
 const pkg = join(stage, 'pkg');
 
 execFileSync('mkdir', ['-p', pkg]);
-for (const f of ['index.mjs', 'report.mjs', 'github.mjs', 'package.json']) {
+
+// Every source file, discovered rather than listed. A hardcoded list silently
+// omitted auth.mjs the day it was added, and the result was not a build error
+// but a Lambda that loaded fine locally and 500'd on every request in
+// production — including the ones that had nothing to do with the new file.
+const sources = readdirSync(src).filter((f) => f.endsWith('.mjs'));
+if (sources.length === 0) throw new Error(`no .mjs sources in ${src}`);
+for (const f of [...sources, 'package.json']) {
   copyFileSync(join(src, f), join(pkg, f));
 }
+console.error(`staging ${sources.length} source files: ${sources.join(', ')}`);
 
 execFileSync(
   'npm',

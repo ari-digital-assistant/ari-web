@@ -22,6 +22,7 @@ TABLE="${TABLE:-heyari-bug-reports}"
 SECRET_ID="${SECRET_ID:-heyari/bugbot}"
 REPO="${REPO:-ari-digital-assistant/ari-android}"
 REPORTS_BASE_URL="${REPORTS_BASE_URL:-https://heyari.dev/reports}"
+SITE_URL="${SITE_URL:-https://heyari.dev}"
 API_NAME="heyari-report-api"            # shared with /api/report, on purpose
 REPORT_FN="heyari-report"               # where the origin secret already lives
 RETENTION_DAYS=90
@@ -135,8 +136,10 @@ aws iam attach-role-policy --role-name "$ROLE_NAME" \
 echo "attached AWSLambdaBasicExecutionRole (CloudWatch Logs)"
 
 # Scoped to the three resources this function actually touches, and to the one
-# prefix inside the bucket. No s3:GetObject on anything but reports/*, no
-# dynamodb:Scan at all, and exactly one secret.
+# prefix inside the bucket: no s3 access outside reports/*, one table, one
+# secret. Scan is here for the maintainer's report list — the table has no
+# index to query by date, and at a handful of reports a day building one would
+# cost more thought than the scan costs money.
 aws iam put-role-policy --role-name "$ROLE_NAME" --policy-name bugreport-access \
   --policy-document "{
     \"Version\": \"2012-10-17\",
@@ -156,7 +159,8 @@ aws iam put-role-policy --role-name "$ROLE_NAME" --policy-name bugreport-access 
         \"Effect\": \"Allow\",
         \"Action\": [
           \"dynamodb:GetItem\", \"dynamodb:PutItem\",
-          \"dynamodb:UpdateItem\", \"dynamodb:DeleteItem\"
+          \"dynamodb:UpdateItem\", \"dynamodb:DeleteItem\",
+          \"dynamodb:Scan\"
         ],
         \"Resource\": \"arn:aws:dynamodb:$REGION:$ACCOUNT:table/$TABLE\"
       },
@@ -181,6 +185,34 @@ if [[ "$ORIGIN_SECRET" == "None" || -z "$ORIGIN_SECRET" ]]; then
 fi
 echo "reusing the one CloudFront already sends (never echoed)"
 
+say "session secret"
+# Signs the maintainer's session cookie. Generated here and reused on every
+# re-run: rotating it would sign everyone out, which is survivable but rude to
+# do by accident.
+SESSION_SECRET="$(aws lambda get-function-configuration --function-name "$FUNCTION_NAME" \
+  --region "$REGION" --query 'Environment.Variables.SESSION_SECRET' --output text 2>/dev/null || true)"
+if [[ "$SESSION_SECRET" == "None" || -z "$SESSION_SECRET" ]]; then
+  SESSION_SECRET="$(openssl rand -hex 32)"
+  echo "generated a new session secret"
+else
+  echo "reusing the existing session secret"
+fi
+
+# The GitHub App's user-authorization credentials, for signing a maintainer in.
+# Read from the same secret as the App key rather than passed on a command
+# line. Absent until the App has a callback URL and a client secret, in which
+# case the reports view simply refuses to sign anyone in — everything the app
+# itself does keeps working.
+OAUTH_JSON="$(aws secretsmanager get-secret-value --secret-id "$SECRET_ID" --region "$REGION" \
+  --query SecretString --output text 2>/dev/null || echo '{}')"
+OAUTH_CLIENT_ID="$(printf '%s' "$OAUTH_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("oauth_client_id",""))' 2>/dev/null || true)"
+OAUTH_CLIENT_SECRET="$(printf '%s' "$OAUTH_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("oauth_client_secret",""))' 2>/dev/null || true)"
+if [[ -z "$OAUTH_CLIENT_ID" || -z "$OAUTH_CLIENT_SECRET" ]]; then
+  echo "no oauth_client_id/oauth_client_secret in $SECRET_ID — the reports view will not sign anyone in yet"
+else
+  echo "found the App's user-authorization credentials"
+fi
+
 say "Lambda $FUNCTION_NAME"
 ZIP="$("$ROOT/scripts/package-bugreport-fn.mjs")"
 echo "packaged $ZIP"
@@ -203,7 +235,7 @@ else
 fi
 
 aws lambda update-function-configuration --function-name "$FUNCTION_NAME" --region "$REGION" \
-  --environment "Variables={BUCKET=$BUCKET,TABLE=$TABLE,SECRET_ID=$SECRET_ID,REPO=$REPO,REPORTS_BASE_URL=$REPORTS_BASE_URL,ORIGIN_SECRET=$ORIGIN_SECRET}" >/dev/null
+  --environment "Variables={BUCKET=$BUCKET,TABLE=$TABLE,SECRET_ID=$SECRET_ID,REPO=$REPO,REPORTS_BASE_URL=$REPORTS_BASE_URL,SITE_URL=$SITE_URL,ORIGIN_SECRET=$ORIGIN_SECRET,SESSION_SECRET=$SESSION_SECRET,OAUTH_CLIENT_ID=$OAUTH_CLIENT_ID,OAUTH_CLIENT_SECRET=$OAUTH_CLIENT_SECRET}" >/dev/null
 aws lambda wait function-updated-v2 --function-name "$FUNCTION_NAME" --region "$REGION"
 echo "set BUCKET=$BUCKET TABLE=$TABLE SECRET_ID=$SECRET_ID REPO=$REPO"
 
@@ -237,7 +269,9 @@ fi
 
 # Explicit routes beat the API's $default, which is what keeps /api/report on
 # the other function while these three come here.
-for ROUTE in "POST /api/bug" "POST /api/bug/{id}/finalise" "POST /api/bug/{id}/delete"; do
+for ROUTE in "POST /api/bug" "POST /api/bug/{id}/finalise" "POST /api/bug/{id}/delete" \
+             "GET /api/bug/auth/start" "GET /api/bug/auth/callback" "GET /api/bug/auth/logout" \
+             "GET /api/bug/reports" "GET /api/bug/reports/{id}"; do
   EXISTING="$(aws apigatewayv2 get-routes --api-id "$API_ID" --region "$REGION" \
     --query "Items[?RouteKey=='$ROUTE'].RouteId | [0]" --output text)"
   if [[ "$EXISTING" == "None" || -z "$EXISTING" ]]; then
@@ -265,6 +299,11 @@ cat <<NOTE
   POST https://heyari.dev/api/bug
   POST https://heyari.dev/api/bug/<id>/finalise
   POST https://heyari.dev/api/bug/<id>/delete
+  GET  https://heyari.dev/api/bug/auth/start      (maintainer sign-in)
+  GET  https://heyari.dev/api/bug/auth/callback
+  GET  https://heyari.dev/api/bug/auth/logout
+  GET  https://heyari.dev/api/bug/reports         (session required)
+  GET  https://heyari.dev/api/bug/reports/<id>
 
 === Two things this script deliberately does not do
 

@@ -299,9 +299,24 @@ export function redactedBody(reportId, deletedAt, hadReplies) {
 export function route(path) {
   const parts = path.replace(/\/+$/, '').split('/').filter(Boolean);
   if (parts[0] !== 'api' || parts[1] !== 'bug') return null;
-  if (parts.length === 2) return { action: 'create' };
+
+  // Reporter endpoints: POST, unauthenticated, from the app.
+  if (parts.length === 2) return { action: 'create', method: 'POST' };
   if (parts.length === 4 && (parts[3] === 'finalise' || parts[3] === 'delete')) {
-    return { action: parts[3], id: parts[2] };
+    return { action: parts[3], id: parts[2], method: 'POST' };
+  }
+
+  // Maintainer endpoints: GET, behind a session, from a browser.
+  if (parts.length === 4 && parts[2] === 'auth') {
+    if (parts[3] === 'start') return { action: 'auth-start', method: 'GET' };
+    if (parts[3] === 'callback') return { action: 'auth-callback', method: 'GET' };
+    if (parts[3] === 'logout') return { action: 'auth-logout', method: 'GET' };
+  }
+  if (parts.length === 3 && parts[2] === 'reports') {
+    return { action: 'list-reports', method: 'GET' };
+  }
+  if (parts.length === 4 && parts[2] === 'reports') {
+    return { action: 'read-report', id: parts[3], method: 'GET' };
   }
   return null;
 }
