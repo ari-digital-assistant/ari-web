@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Bug reports · Ari</title>
+<!--
+  Hand-written rather than an Astro page, following oauth/client and
+  oauth/callback: those are functional surfaces too, and keeping this one out
+  of the marketing build means a redesign there can never break triage.
+
+  The palette mirrors site/src/styles/tokens.css. It is copied rather than
+  imported because Astro emits that stylesheet under a content-hashed name
+  this file cannot reference; the handful of values below are the ones this
+  page uses, and they are stable.
+-->
+<style>
+  /*
+    No @font-face for Manrope. Astro emits it under a content-hashed name that
+    changes every build, and copying a 56K font into public/ for one internal
+    page is not worth the duplicate. The palette is what makes this feel like
+    heyari.dev; the typeface is not.
+  */
+  :root{
+    --mono: ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
+    --bg:#F2E7D4; --surface:#FBF4E7; --surface-2:#F6EBD8; --ink:#241521;
+    --muted:#7A6768; --hair:#E3D3BC; --plum:#5A2848; --sun:#D8431C;
+    --danger:#B3261E; --ok:#2E7D32;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#150D14; --surface:#1E141D; --surface-2:#261A26; --ink:#F6EDE1;
+      --muted:#AC969C; --hair:#372536; --plum:#B979A0; --sun:#FF6A38;
+      --danger:#F2B8B5; --ok:#81C784;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--sun)}
+  :focus-visible{outline:2px solid var(--sun); outline-offset:2px; border-radius:4px}
+  .wrap{max-width:940px; margin:0 auto; padding:32px 20px 80px}
+
+  header{display:flex; align-items:baseline; justify-content:space-between; gap:16px; flex-wrap:wrap;
+    border-bottom:1px solid var(--hair); padding-bottom:16px; margin-bottom:28px}
+  h1{font-size:26px; margin:0; letter-spacing:-.01em}
+  .eyebrow{font-family:var(--mono); font-size:11.5px; letter-spacing:.18em;
+    text-transform:uppercase; color:var(--sun); margin:0 0 6px}
+  .who{font-size:13px; color:var(--muted)}
+
+  .card{background:var(--surface); border:1px solid var(--hair); border-radius:12px;
+    padding:16px 18px; margin-bottom:12px}
+  .row{display:flex; gap:14px; justify-content:space-between; align-items:baseline; flex-wrap:wrap}
+  .title{font-weight:600; font-size:15.5px; margin:0}
+  .meta{font-family:var(--mono); font-size:11.5px; color:var(--muted); font-variant-numeric:tabular-nums}
+  .chips{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px}
+  .chip{font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase;
+    border:1px solid var(--hair); border-radius:999px; padding:2px 9px; color:var(--muted)}
+  .chip.note{border-color:var(--plum); color:var(--plum)}
+  .chip.soon{border-color:var(--danger); color:var(--danger)}
+
+  button, .btn{
+    font:inherit; font-size:14px; font-weight:600; cursor:pointer;
+    background:var(--sun); color:#fff; border:0; border-radius:999px;
+    padding:10px 20px; text-decoration:none; display:inline-block;
+  }
+  .btn.ghost{background:transparent; color:var(--ink); border:1px solid var(--hair)}
+
+  pre{font-family:var(--mono); font-size:12px; line-height:1.6; background:var(--surface-2);
+    border:1px solid var(--hair); border-radius:10px; padding:12px 14px;
+    overflow-x:auto; white-space:pre-wrap; word-break:break-word; margin:0}
+  .files{list-style:none; padding:0; margin:12px 0 0; display:flex; flex-direction:column; gap:8px}
+  .files a{font-family:var(--mono); font-size:12.5px}
+  img.shot{max-width:320px; width:100%; border:1px solid var(--hair); border-radius:10px; display:block; margin-top:10px}
+  .empty{color:var(--muted)}
+  .warn{color:var(--danger)}
+  .signin{text-align:center; padding:64px 0}
+  .signin p{max-width:46ch; margin:12px auto 24px; color:var(--muted)}
+  .expiry{font-size:12px; color:var(--muted); margin-top:14px}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <p class="eyebrow">Maintainers only</p>
+      <h1>Bug reports</h1>
+    </div>
+    <div class="who" id="who" hidden></div>
+  </header>
+
+  <section id="signin" class="signin" hidden>
+    <h2 id="signin-heading">Sign in to read reports</h2>
+    <p id="signin-body">
+      These are diagnostic files people sent with a bug report — logs, screenshots
+      and recordings of their voice. Only maintainers of ari-android can open them.
+    </p>
+    <a class="btn" href="/api/bug/auth/start">Sign in with GitHub</a>
+  </section>
+
+  <section id="list" hidden></section>
+  <section id="detail" hidden></section>
+  <p id="error" class="warn" hidden></p>
+</div>
+
+<script>
+(function () {
+  const el = (id) => document.getElementById(id);
+  const show = (id, on) => { el(id).hidden = !on; };
+
+  const text = (tag, cls, value) => {
+    const node = document.createElement(tag);
+    if (cls) node.className = cls;
+    node.textContent = value;
+    return node;
+  };
+
+  function expiryLabel(seconds) {
+    if (!seconds) return '';
+    const days = Math.ceil((seconds * 1000 - Date.now()) / 86400000);
+    return days > 0 ? `${days} day${days === 1 ? '' : 's'} left` : 'expired';
+  }
+
+  async function api(path) {
+    const res = await fetch(path, { credentials: 'same-origin' });
+    if (res.status === 401) return { signedOut: true };
+    if (!res.ok) throw new Error(`${path} returned ${res.status}`);
+    return res.json();
+  }
+
+  function renderList(reports) {
+    const list = el('list');
+    list.textContent = '';
+    if (reports.length === 0) {
+      list.appendChild(text('p', 'empty', 'No reports have been filed yet.'));
+      show('list', true);
+      return;
+    }
+
+    for (const r of reports) {
+      const card = document.createElement('article');
+      card.className = 'card';
+
+      const row = document.createElement('div');
+      row.className = 'row';
+      const title = text('p', 'title', (r.description || '(no description)').split('\n')[0]);
+      const meta = text('span', 'meta', [
+        r.issueNumber ? `#${r.issueNumber}` : r.state,
+        new Date(r.createdAt).toLocaleString(),
+      ].join(' · '));
+      row.append(title, meta);
+
+      const sub = text('p', 'meta', `${r.device} · Ari ${r.appVersion ?? '?'} · ${r.reportId}`);
+      sub.style.marginTop = '4px';
+
+      const chips = document.createElement('div');
+      chips.className = 'chips';
+      for (const kind of r.attachments) chips.appendChild(text('span', 'chip', kind));
+      if (r.hasPrivateNote) chips.appendChild(text('span', 'chip note', 'private note'));
+      const left = expiryLabel(r.expiresAt);
+      if (left) {
+        const soon = left === 'expired' || parseInt(left, 10) <= 7;
+        chips.appendChild(text('span', `chip${soon ? ' soon' : ''}`, left));
+      }
+
+      const open = document.createElement('button');
+      open.className = 'btn ghost';
+      open.style.marginTop = '12px';
+      open.textContent = 'Open';
+      open.addEventListener('click', () => openReport(r.reportId));
+
+      card.append(row, sub, chips, open);
+      if (r.issueUrl) {
+        const link = document.createElement('a');
+        link.href = r.issueUrl;
+        link.textContent = 'View issue';
+        link.className = 'btn ghost';
+        link.style.cssText = 'margin:12px 0 0 8px';
+        card.appendChild(link);
+      }
+      list.appendChild(card);
+    }
+    show('list', true);
+  }
+
+  async function openReport(id) {
+    show('list', false);
+    show('detail', true);
+    const detail = el('detail');
+    detail.textContent = 'Loading…';
+
+    const data = await api(`/api/bug/reports/${encodeURIComponent(id)}`);
+    if (data.signedOut) return renderSignedOut();
+
+    detail.textContent = '';
+    const back = document.createElement('button');
+    back.className = 'btn ghost';
+    back.textContent = '← All reports';
+    back.addEventListener('click', () => { show('detail', false); show('list', true); });
+    detail.appendChild(back);
+
+    const card = document.createElement('article');
+    card.className = 'card';
+    card.style.marginTop = '18px';
+    card.appendChild(text('p', 'title', (data.report?.description || '(no description)')));
+    card.appendChild(text('p', 'meta', `${data.reportId} · ${new Date(data.createdAt).toLocaleString()}`));
+
+    if (data.report?.privateNote) {
+      card.appendChild(text('p', 'eyebrow', 'Private note'));
+      card.appendChild(text('pre', null, data.report.privateNote));
+    }
+
+    card.appendChild(text('p', 'eyebrow', 'Report'));
+    card.appendChild(text('pre', null, JSON.stringify(stripNote(data.report), null, 2)));
+
+    if (data.files.length) {
+      card.appendChild(text('p', 'eyebrow', 'Files'));
+      const files = document.createElement('ul');
+      files.className = 'files';
+      for (const f of data.files) {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = f.url;
+        a.textContent = f.name;
+        a.rel = 'noopener';
+        li.appendChild(a);
+        // Shown rather than downloaded: a screenshot is the one attachment
+        // that answers a question at a glance.
+        if (f.name.endsWith('.png')) {
+          const img = document.createElement('img');
+          img.className = 'shot';
+          img.src = f.url;
+          img.alt = 'Screenshot the reporter sent';
+          li.appendChild(img);
+        }
+        files.appendChild(li);
+      }
+      card.appendChild(files);
+      card.appendChild(text('p', 'expiry',
+        `These links stop working in ${Math.round(data.urlsExpireIn / 60)} minutes. Reload the page for fresh ones.`));
+    } else {
+      card.appendChild(text('p', 'empty', 'No files were sent with this report.'));
+    }
+
+    detail.appendChild(card);
+  }
+
+  /** The note is rendered above; repeating it inside the JSON is noise. */
+  function stripNote(report) {
+    if (!report) return report;
+    const { privateNote, ...rest } = report;
+    return rest;
+  }
+
+  function renderSignedOut() {
+    show('list', false);
+    show('detail', false);
+    show('signin', true);
+    if (new URLSearchParams(location.search).has('denied')) {
+      el('signin-heading').textContent = 'That account cannot read reports';
+      el('signin-body').textContent =
+        'Reading these needs write access to ari-android. If that should be you, ' +
+        'sign in with the account that has it.';
+    }
+  }
+
+  (async function start() {
+    try {
+      const data = await api('/api/bug/reports');
+      if (data.signedOut) return renderSignedOut();
+      show('who', true);
+      const count = data.reports.length;
+      el('who').textContent = `${count} report${count === 1 ? '' : 's'} · `;
+      const out = document.createElement('a');
+      out.href = '/api/bug/auth/logout';
+      out.textContent = 'sign out';
+      el('who').appendChild(out);
+      renderList(data.reports);
+    } catch (err) {
+      show('error', true);
+      el('error').textContent = `Could not load reports: ${err.message}`;
+    }
+  })();
+})();
+</script>
+</body>
+</html>
