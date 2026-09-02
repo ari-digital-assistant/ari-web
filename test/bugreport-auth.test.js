@@ -4,6 +4,7 @@ import {
   verify,
   authorizeUrl,
   parseCookies,
+  cookiesOf,
   cookie,
   clearCookie,
   mayReadReports,
@@ -84,6 +85,26 @@ describe('cookies', () => {
     expect(parseCookies(undefined)).toEqual({});
     expect(parseCookies('')).toEqual({});
     expect(parseCookies('novalue')).toEqual({});
+  });
+
+  it('reads the array an HTTP API actually sends, not the header it does not', () => {
+    // Payload format 2.0 puts cookies in event.cookies and strips the Cookie
+    // header entirely. Reading the header alone found nothing every time, and
+    // sign-in refused itself with "that did not come from here".
+    const event = { cookies: ['ari_reports_state=abc.def', 'other=1'], headers: {} };
+    expect(cookiesOf(event)['ari_reports_state']).toBe('abc.def');
+  });
+
+  it('still reads a header, for a local invoke or a format 1.0 event', () => {
+    expect(cookiesOf({ headers: { cookie: 'ari_reports_session=x.y' } })['ari_reports_session'])
+      .toBe('x.y');
+    expect(cookiesOf({ headers: { Cookie: 'ari_reports_session=x.y' } })['ari_reports_session'])
+      .toBe('x.y');
+  });
+
+  it('finds nothing rather than throwing on an event with neither', () => {
+    expect(cookiesOf({})).toEqual({});
+    expect(cookiesOf(undefined)).toEqual({});
   });
 
   it('sets the flags that keep a session out of reach of script', () => {

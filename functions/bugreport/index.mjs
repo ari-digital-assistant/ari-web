@@ -52,7 +52,7 @@ import {
   cookie,
   mayReadReports,
   newNonce,
-  parseCookies,
+  cookiesOf,
   sign,
   verify,
 } from './auth.mjs';
@@ -335,7 +335,7 @@ function authStart() {
 
 async function authCallback(event) {
   const query = event.queryStringParameters ?? {};
-  const cookies = parseCookies((event.headers?.cookie ?? event.headers?.Cookie) || '');
+  const cookies = cookiesOf(event);
 
   // The state has to be both signed by us and the one this browser was given.
   // Either alone is forgeable by somebody who can make a victim's browser
@@ -385,8 +385,7 @@ async function authCallback(event) {
 
 /** The signed-in maintainer, or null. */
 function session(event) {
-  const cookies = parseCookies((event.headers?.cookie ?? event.headers?.Cookie) || '');
-  return verify(SESSION_SECRET, cookies[SESSION_COOKIE]);
+  return verify(SESSION_SECRET, cookiesOf(event)[SESSION_COOKIE]);
 }
 
 async function listReports() {

@@ -28,7 +28,13 @@ export const LIMITS = {
   stackTrace: 20000,
   attachmentsPerReport: 8,
   bytesPerReport: 20 * 1024 * 1024,
-  reportsPerInstallPerDay: 5,
+  // Ten rather than five: somebody chasing an intermittent bug legitimately
+  // files several in an afternoon, and the byte cap is the tighter bound
+  // anyway — ten reports at the per-report maximum would hit that first.
+  //
+  // A withdrawal deliberately does NOT refund the count. It would otherwise be
+  // a loop: file, delete, file, delete, forever.
+  reportsPerInstallPerDay: 10,
   bytesPerInstallPerDay: 60 * 1024 * 1024,
   skills: 64,
   permissions: 32,

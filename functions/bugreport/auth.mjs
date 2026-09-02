@@ -67,17 +67,30 @@ export function authorizeUrl(clientId, redirectUri, state) {
   return `${AUTHORIZE}?${params}`;
 }
 
-/** Cookies as sent by a browser: `a=1; b=2`. */
-export function parseCookies(header) {
-  if (typeof header !== 'string') return {};
+/** Cookies as sent by a browser: `a=1; b=2`, or already split into a list. */
+export function parseCookies(source) {
+  const parts = Array.isArray(source)
+    ? source
+    : typeof source === 'string' ? source.split(';') : [];
   const out = {};
-  for (const part of header.split(';')) {
+  for (const part of parts) {
     const eq = part.indexOf('=');
     if (eq <= 0) continue;
     out[part.slice(0, eq).trim()] = decodeURIComponent(part.slice(eq + 1).trim());
   }
   return out;
 }
+
+/**
+ * The request's cookies, whichever way the gateway chose to deliver them.
+ *
+ * An HTTP API on payload format 2.0 puts them in `event.cookies` as an array
+ * and removes the Cookie header altogether — so reading the header alone finds
+ * nothing, every time, and the sign-in refuses itself with "that did not come
+ * from here". The header fallback is for a local invoke or a format 1.0 event.
+ */
+export const cookiesOf = (event) =>
+  parseCookies(event?.cookies ?? event?.headers?.cookie ?? event?.headers?.Cookie ?? []);
 
 /**
  * HttpOnly so script cannot read it, Secure because the site is HTTPS only,
