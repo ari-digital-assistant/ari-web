@@ -1,0 +1,40 @@
+name: Bug report
+description: Something on heyari.dev is broken
+labels: ["bug"]
+body:
+  - type: input
+    id: url
+    attributes:
+      label: Which page?
+      placeholder: "https://heyari.dev/skills/dev.heyari.timer"
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What you expected, and what you got.
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and platform
+      placeholder: "Firefox 145, Linux"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Which part of the site?
+      options:
+        - Marketing pages
+        - Skills browser
+        - Documentation
+        - Sign-in or OAuth callback
+        - Something else
+    validations:
+      required: true

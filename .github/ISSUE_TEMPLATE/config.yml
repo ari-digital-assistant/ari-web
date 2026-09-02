@@ -1,0 +1,10 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Something wrong in the Android app
+    url: https://github.com/ari-digital-assistant/ari-android/issues/new/choose
+    about: >-
+      Including Home Assistant sign-in failing after the browser hands back to
+      Ari — that's App Links on the app side.
+  - name: Questions and ideas
+    url: https://github.com/orgs/ari-digital-assistant/discussions
+    about: For anything that isn't a bug.
