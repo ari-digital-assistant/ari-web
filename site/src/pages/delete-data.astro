@@ -1,0 +1,158 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Linked from the Google Play store listing as Ari's data deletion URL, so it
+// has to satisfy three things Google checks for: it names the app and the
+// developer, the steps to request deletion are the most prominent thing on the
+// page, and it says exactly what goes, what stays, and for how long.
+//
+// A section of /privacy would have met the letter of that and not the spirit —
+// somebody tapping "Delete data" on a store listing should land on a page about
+// deleting data, not scroll-jump into the middle of an essay.
+---
+<Base
+  title="Delete your data — Ari"
+  description="How to delete the data Ari holds: the steps, what is deleted, what is kept, and how long anything is retained."
+>
+  <article class="dd-page wrap">
+    <header class="dd-hero">
+      <span class="eyebrow">Data deletion</span>
+      <h1>Deleting your Ari data.</h1>
+      <p class="lede">Ari is made by Keith Vassallo. Almost everything it knows stays on your phone and never reaches us at all — so for most people there is nothing on our side to delete. Here is how to check, and how to remove what there is.</p>
+    </header>
+
+    <section class="dd-block">
+      <h2>What we actually hold</h2>
+      <p>One thing, and only if you chose to send it: <strong>a bug report</strong>. Ari has no accounts, no profiles and no analytics, so unless you have tapped the report button and ticked the consent box, we hold nothing about you whatsoever.</p>
+      <p>A bug report has two halves. The <strong>public half</strong> becomes an issue on GitHub — what you typed, your app and Android versions, your device model. The <strong>private half</strong> is the diagnostic files you ticked: a scrubbed log, a screenshot, this session's conversation, voice recordings.</p>
+    </section>
+
+    <section class="dd-block dd-steps">
+      <h2>How to delete it</h2>
+
+      <div class="dd-step">
+        <span class="dd-num">1</span>
+        <div>
+          <h3>In the app, in three taps</h3>
+          <p>Open Ari and go to <strong>Settings › Debug › My Reports</strong>. Every report you have sent from that phone is listed. Tap <strong>Withdraw</strong> on any of them and confirm.</p>
+          <p>This erases the diagnostic files immediately and blanks your description from the public issue.</p>
+        </div>
+      </div>
+
+      <div class="dd-step">
+        <span class="dd-num">2</span>
+        <div>
+          <h3>If you no longer have the phone</h3>
+          <p>That list lives only on the device that sent the report, so a reinstall or a new phone leaves you without it. Email <a href="mailto:keith@vassallo.cloud">keith@vassallo.cloud</a> with the words <strong>&ldquo;Ari data deletion&rdquo;</strong> in the subject.</p>
+          <p>Include the report ID if you have it — it looks like <code>r_01J…</code> and appears at the bottom of the GitHub issue. If you do not, say roughly when you sent the report and what it was about, and we will find it.</p>
+        </div>
+      </div>
+
+      <div class="dd-step">
+        <span class="dd-num">3</span>
+        <div>
+          <h3>Everything on the phone itself</h3>
+          <p>Conversation history, voice recordings, your settings and anything Ari has remembered about you are all on the device. Clear them in <strong>Settings › Debug</strong>, or uninstall Ari — uninstalling takes the lot with it.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="dd-block">
+      <h2>What is deleted, what is kept</h2>
+      <table class="dd-table">
+        <thead>
+          <tr><th>What</th><th>On withdrawal</th><th>Otherwise</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Diagnostic files — logs, screenshots, conversations, recordings</td>
+            <td><strong>Erased.</strong> They are ours to delete and they go.</td>
+            <td>Deleted automatically 90 days after you sent them.</td>
+          </tr>
+          <tr>
+            <td>Your description and private note</td>
+            <td><strong>Blanked</strong> from the issue. GitHub keeps an edit history, so it can still be read by anyone who looks — see below.</td>
+            <td>The private note is deleted with the files at 90 days.</td>
+          </tr>
+          <tr>
+            <td>The GitHub issue itself</td>
+            <td><strong>Kept.</strong> It is Ari's bug history, and other people may have replied to it.</td>
+            <td>Kept indefinitely.</td>
+          </tr>
+          <tr>
+            <td>Everything on your phone</td>
+            <td>—</td>
+            <td>Never sent to us. Yours to clear or uninstall at any time.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="dd-note"><strong>The honest caveat:</strong> withdrawing takes your words out of view, not out of the world. GitHub retains the edit history of every issue, so somebody who goes looking can still read what was originally written. The files are the part we can genuinely promise are gone, because those are the part we hold.</p>
+    </section>
+
+    <section class="dd-block">
+      <h2>Retention</h2>
+      <p><strong>90 days, automatically, with no exceptions.</strong> Diagnostic files and the record that ties them to a report expire on their own whether or not you ask. Withdrawing simply brings that forward to now.</p>
+      <p>More detail on all of this is in the <a href="/privacy/#bug-reports">privacy notice</a>.</p>
+    </section>
+  </article>
+</Base>
+<style>
+  /* Scoped page styles in the Dusk system. Shared primitives (.wrap, .eyebrow)
+     come from global.css and are NOT redefined. */
+  .dd-page{padding-block:60px 96px}
+
+  .dd-hero{max-width:62ch}
+  .dd-hero h1{font-size:clamp(36px,5vw,56px); line-height:1.04; margin-top:16px}
+  .lede{
+    margin-top:22px; font-size:clamp(17px,2vw,20px); line-height:1.5;
+    color:var(--muted); max-width:56ch; font-weight:450;
+  }
+
+  .dd-block{padding:0; margin-block:44px; max-width:68ch}
+  .dd-block h2{font-size:clamp(24px,3vw,32px); line-height:1.12; margin-bottom:14px}
+  .dd-block p{color:var(--ink)}
+  .dd-block p + p{margin-top:14px}
+
+  /* The steps are the point of the page, so they get the visual weight: a
+     numbered rail rather than another run of paragraphs. */
+  .dd-steps{max-width:72ch}
+  .dd-step{
+    display:flex; gap:18px; align-items:flex-start;
+    background:var(--surface); border:1px solid var(--hair);
+    border-radius:16px; padding:22px 24px; margin-top:16px;
+  }
+  .dd-num{
+    flex:none; width:34px; height:34px; border-radius:999px;
+    background:var(--sun); color:#fff; font-weight:800; font-size:16px;
+    display:grid; place-items:center; font-variant-numeric:tabular-nums;
+  }
+  .dd-step h3{font-size:18px; margin:2px 0 8px; line-height:1.25}
+  .dd-step p{font-size:15.5px}
+  .dd-step code{
+    font-family:var(--mono); font-size:.88em; padding:1px 6px; border-radius:5px;
+    background:var(--surface-2); border:1px solid var(--hair);
+  }
+
+  .dd-table{
+    width:100%; border-collapse:collapse; margin-top:18px; font-size:15px;
+    display:block; overflow-x:auto;
+  }
+  .dd-table th, .dd-table td{
+    text-align:left; vertical-align:top; padding:12px 14px;
+    border-bottom:1px solid var(--hair);
+  }
+  .dd-table th{
+    font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--muted); font-weight:700;
+  }
+  .dd-table td{color:var(--ink)}
+
+  .dd-note{
+    margin-top:18px; padding:16px 18px; font-size:15px;
+    background:var(--surface-2); border:1px solid var(--hair); border-radius:12px;
+  }
+
+  @media (max-width:560px){
+    .dd-step{flex-direction:column; gap:12px}
+  }
+</style>
