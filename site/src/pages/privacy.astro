@@ -31,7 +31,11 @@ import FriendlyBadge from '../components/FriendlyBadge.astro';
     </section>
 
     <section class="pp-block">
-      <h2>If you send us a bug report</h2>
+      <!-- The one heading on this page with an id: ari-android's README and
+           the in-app reporter both deep-link to it. Astro does not slugify
+           headings in .astro the way it does in markdown, so without this
+           the link lands on the page and goes nowhere. -->
+      <h2 id="bug-reports">If you send us a bug report</h2>
       <p>Testing builds of Ari have a report button. It does nothing until you press it, and it shows you everything it is about to send before it sends it. There is no automatic crash upload — if Ari falls over, it saves the stack trace on your phone and asks you next time you open it.</p>
       <p>A report comes in two halves, and they are treated very differently.</p>
       <ul>

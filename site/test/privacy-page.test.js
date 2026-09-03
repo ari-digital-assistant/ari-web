@@ -67,6 +67,12 @@ describe('/privacy on bug reports', () => {
     expect(html).toMatch(/uninstall Ari/i);
   });
 
+  it('keeps the #bug-reports anchor other repos link to', () => {
+    // ari-android's README points people here. Astro does not slugify
+    // headings in .astro, so this id is hand-written and easy to lose.
+    expect(html).toMatch(/<h2[^>]*id="bug-reports"/);
+  });
+
   it('names consent as the lawful basis and AWS as the processor', () => {
     expect(html).toMatch(/lawful basis/i);
     expect(html).toMatch(/consent/i);
