@@ -29,6 +29,13 @@ describe('/privacy page', () => {
     expect(html).toContain('https://github.com/ari-digital-assistant');
     expect(html).toContain('https://friendlymanifesto.org');
   });
+
+  it('names the map tile provider, which is the other thing that leaves', () => {
+    // Opening Places jumps the map to your last known fix and then asks
+    // OpenFreeMap for tiles there. It is the only location that leaves the
+    // device, and the Play data safety form has to agree with this page.
+    expect(html).toMatch(/OpenFreeMap/);
+  });
 });
 
 describe('/privacy on bug reports', () => {
