@@ -27,7 +27,26 @@ import FriendlyBadge from '../components/FriendlyBadge.astro';
 
     <section class="pp-block">
       <h2>No account. No telemetry. No kidding.</h2>
-      <p>There's nothing to sign up for — no profile, no login for the core assistant. And there's no analytics quietly counting your taps, no crash-reporter phoning home, no &ldquo;anonymous usage data&rdquo;. We checked: there isn't an analytics SDK anywhere in the app, because we never put one there.</p>
+      <p>There's nothing to sign up for — no profile, no login for the core assistant. And there's no analytics quietly counting your taps, no crash-reporter phoning home, no &ldquo;anonymous usage data&rdquo;. We checked: there isn't an analytics SDK anywhere in the app, because we never put one there. The only time anything about your phone travels to us is a bug report you filled in and sent yourself — which is worth a section of its own.</p>
+    </section>
+
+    <section class="pp-block">
+      <h2>If you send us a bug report</h2>
+      <p>Testing builds of Ari have a report button. It does nothing until you press it, and it shows you everything it is about to send before it sends it. There is no automatic crash upload — if Ari falls over, it saves the stack trace on your phone and asks you next time you open it.</p>
+      <p>A report comes in two halves, and they are treated very differently.</p>
+      <ul>
+        <li><strong>The public half</strong> becomes a GitHub issue that anyone can read: what you typed in the description box, your phone model and Android version, Ari's version and settings, which skills you have installed, and the stack trace if it crashed. No files go in here. No screenshots, and never any audio.</li>
+        <li><strong>The private half</strong> is the files you tick — a log, a screenshot, this session's conversation, voice recordings. Every one is a separate tick, and the ones with your voice in them start switched off. Underneath sits a consent box that also starts unticked. Leave it alone and the report still files perfectly well, just without the files.</li>
+      </ul>
+      <p>Before the log goes anywhere it gets scrubbed on your phone: the API keys you have saved, the server addresses you configured, email addresses, phone numbers. The preview shows you the scrubbed version, not the original, so what you approve is what we get. Scrubbing is best-effort by its nature — which is exactly why the log goes in the private half and never the public issue.</p>
+      <p>The files land in a locked-down bucket in our own AWS account in London, encrypted on the way there and encrypted at rest. That is not end-to-end encryption and we won't dress it up as such: Ari's maintainers can open those files, because reading them is the entire point. Nobody else can.</p>
+      <p>They are deleted automatically 90 days later, and you can withdraw a report before then from Settings &rsaquo; Debug &rsaquo; My Reports. Two honest caveats about doing that:</p>
+      <ul>
+        <li><strong>The files really are gone.</strong> Those are ours to erase, and withdrawing erases them.</li>
+        <li><strong>The issue is blanked, not deleted.</strong> GitHub keeps the edit history of an issue, so withdrawing takes your words out of view rather than out of the world. We would rather tell you that than let you assume otherwise.</li>
+      </ul>
+      <p>The key that proves a report is yours is kept on your phone and nowhere else. That is deliberate — it means nobody else can withdraw your report — but it does mean that if you uninstall Ari, the 90-day deletion is what's left.</p>
+      <p>The lawful basis for all of this is your consent, given by ticking that box, and you can withdraw it as described above. AWS processes the files on our behalf. GitHub hosts the public issue.</p>
     </section>
 
     <section class="pp-block">
