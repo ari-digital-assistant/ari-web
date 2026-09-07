@@ -54,9 +54,9 @@ describe('tester page', () => {
 
   it('gives a way through when JavaScript or the POST fails', () => {
     expect(html).toContain('<noscript>');
-    expect(html).toContain('mailto:keith@vassallo.cloud');
+    expect(html).toContain('mailto:hey@heyari.dev');
     // The failure path has to offer the fallback too, not just apologise.
-    expect(shipped).toContain('keith@vassallo.cloud instead');
+    expect(shipped).toContain('hey@heyari.dev instead');
   });
 
   it('mints and solves its challenge against our own endpoint', () => {

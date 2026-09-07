@@ -20,7 +20,7 @@ ROLE_NAME="heyari-tester-lambda"
 API_NAME="heyari-report-api"            # shared with /api/report and /api/bug, on purpose
 REPORT_FN="heyari-report"               # where the origin secret already lives
 TESTER_FROM="${TESTER_FROM:-testers@heyari.dev}"
-TESTER_TO="${TESTER_TO:-keith@vassallo.cloud}"
+TESTER_TO="${TESTER_TO:-hey@heyari.dev}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 
@@ -59,6 +59,11 @@ echo "attached AWSLambdaBasicExecutionRole (CloudWatch Logs)"
 # applies — and authorises against — whether the caller asked for one or not.
 # Wildcarded rather than pinned by name, because the name is a property of the
 # SES setup rather than of this function.
+#
+# Both entries now resolve to the same verified domain, because the recipient
+# moved onto heyari.dev. The recipient ARN is kept rather than dropped: it is
+# what makes this correct again the day somebody points TESTER_TO at an
+# address somewhere else.
 FROM_DOMAIN="${TESTER_FROM#*@}"
 aws iam put-role-policy --role-name "$ROLE_NAME" --policy-name ses-send \
   --policy-document "{

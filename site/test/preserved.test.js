@@ -44,3 +44,40 @@ describe('preserved OAuth + App-Link surface', () => {
     expect(existsSync(new URL('../dist/favicon.svg', import.meta.url))).toBe(true);
   });
 });
+
+describe('security.txt', () => {
+  const text = () =>
+    readFileSync(new URL('../dist/.well-known/security.txt', import.meta.url), 'utf8');
+
+  const field = (name) =>
+    text().split('\n').find((l) => l.startsWith(`${name}:`))?.slice(name.length + 1).trim();
+
+  it('survives the build byte-for-byte', () => {
+    expect(sha('../dist/.well-known/security.txt'))
+      .toBe(sha('../public/.well-known/security.txt'));
+  });
+
+  it('carries the two fields RFC 9116 requires', () => {
+    expect(field('Contact')).toBe('mailto:security@heyari.dev');
+    expect(field('Expires')).toBeTruthy();
+  });
+
+  it('names itself as canonical, so a copy found elsewhere is obviously not ours', () => {
+    expect(field('Canonical')).toBe('https://heyari.dev/.well-known/security.txt');
+  });
+
+  it('has not expired, and will fail here a month before it does', () => {
+    // The whole trap with security.txt is that Expires is mandatory, a year
+    // out, and nothing tells you when it lapses — the file just quietly stops
+    // being valid. This is that reminder: the suite goes red with a month in
+    // hand, which is plenty of time to push a new date.
+    const expires = new Date(field('Expires'));
+    expect(Number.isNaN(expires.getTime())).toBe(false);
+    const monthsNotice = 30 * 24 * 60 * 60 * 1000;
+    expect(expires.getTime() - Date.now()).toBeGreaterThan(monthsNotice);
+  });
+
+  it('promises no language nobody here reads', () => {
+    expect(field('Preferred-Languages')).toBe('en');
+  });
+});

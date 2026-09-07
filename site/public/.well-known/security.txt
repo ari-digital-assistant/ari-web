@@ -1,0 +1,19 @@
+# Ari — the open-source digital assistant. https://heyari.dev
+#
+# Found a security problem in the engine, the apps, the skills registry or this
+# website? Please tell us before you tell the world. Published skills are signed
+# and auto-update onto real devices, so a public report is a public exploit
+# window.
+#
+# For anything living in a repository, GitHub's private vulnerability reporting
+# is the better route — the Security tab, then "Report a vulnerability". It
+# keeps the report between you and the maintainers until there is a fix. Use the
+# address below if that does not suit you, or if the problem is with this site
+# or the infrastructure behind it.
+#
+# We would much rather hear about something uncertain than not hear about it.
+
+Contact: mailto:security@heyari.dev
+Expires: 2027-09-07T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://heyari.dev/.well-known/security.txt

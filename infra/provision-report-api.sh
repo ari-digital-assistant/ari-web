@@ -19,7 +19,7 @@ ROLE_NAME="heyari-report-lambda"
 API_NAME="heyari-report-api"
 DIST_ID="${DIST_ID:-E3DZC8ECXAT4FZ}"
 REPORT_FROM="${REPORT_FROM:-reports@heyari.dev}"
-REPORT_TO="${REPORT_TO:-keith@vassallo.cloud}"
+REPORT_TO="${REPORT_TO:-hey@heyari.dev}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 ROOT="$(cd "$HERE/.." && pwd)"
 
@@ -74,6 +74,11 @@ echo "attached AWSLambdaBasicExecutionRole (CloudWatch Logs)"
 # property of the SES setup, not of this function, and pinning it means this
 # policy breaks silently the day somebody changes the default. A configuration
 # set only selects delivery-tracking options within this account.
+#
+# Both entries now resolve to the same verified domain, because the recipient
+# moved onto heyari.dev. The recipient ARN is kept rather than dropped: it is
+# what makes this correct again the day somebody points REPORT_TO at an
+# address somewhere else.
 FROM_DOMAIN="${REPORT_FROM#*@}"
 aws iam put-role-policy --role-name "$ROLE_NAME" --policy-name ses-send \
   --policy-document "{

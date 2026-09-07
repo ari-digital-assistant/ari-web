@@ -100,14 +100,14 @@ import Base from '../layouts/Base.astro';
         </div>
       </form>
       <noscript>
-        <p class="tp-noscript">This form needs JavaScript. If you would rather not run it, email <a href="mailto:keith@vassallo.cloud">keith@vassallo.cloud</a> with the words <strong>&ldquo;Ari tester&rdquo;</strong> in the subject and your Google account email in the body.</p>
+        <p class="tp-noscript">This form needs JavaScript. If you would rather not run it, email <a href="mailto:hey@heyari.dev">hey@heyari.dev</a> with the words <strong>&ldquo;Ari tester&rdquo;</strong> in the subject and your Google account email in the body.</p>
       </noscript>
     </section>
 
     <section class="tp-block">
       <h2>What happens to your email address</h2>
       <p>It reaches us as a single email and goes on the tester list in the Google Play Console. That is the whole of it. It is not added to a mailing list, it is not shared with anyone, and there is nothing else to sign up for.</p>
-      <p>We hold it for as long as you are a tester. Ask us to remove you — by replying to any email from us, or writing to <a href="mailto:keith@vassallo.cloud">keith@vassallo.cloud</a> — and you come off the Play Console list and out of our inbox. The lawful basis is your consent, given by ticking that box.</p>
+      <p>We hold it for as long as you are a tester. Ask us to remove you — by replying to any email from us, or writing to <a href="mailto:privacy@heyari.dev">privacy@heyari.dev</a> — and you come off the Play Console list and out of our inbox. The lawful basis is your consent, given by ticking that box.</p>
       <p>The full picture is in the <a href="/privacy/#testing">privacy notice</a>, and the <a href="/delete-data">data deletion page</a> covers removing everything else Ari might hold.</p>
     </section>
   </article>
@@ -291,7 +291,7 @@ import Base from '../layouts/Base.astro';
       altcha = await work(address);
     } catch {
       pending = null;
-      say('The anti-spam check could not run. Please email keith@vassallo.cloud instead.', 'bad');
+      say('The anti-spam check could not run. Please email hey@heyari.dev instead.', 'bad');
       submit.disabled = false;
       return;
     }
@@ -320,7 +320,7 @@ import Base from '../layouts/Base.astro';
       pending = null;
       // Deliberately offers the fallback rather than just apologising: the
       // whole page is worthless if a failed POST is where the road ends.
-      say('That did not send. Please email keith@vassallo.cloud instead.', 'bad');
+      say('That did not send. Please email hey@heyari.dev instead.', 'bad');
       submit.disabled = false;
     }
   });
