@@ -18,4 +18,11 @@ describe('get ari section', () => {
     expect(html).not.toMatch(/play\.google\.com|f-droid\.org\/[a-z]|apps\.apple\.com/i);
     expect(html).toMatch(/coming soon/i);
   });
+  it('leads with the tester CTA, matching the hero', () => {
+    // Scoped to the card, because the hero further up the same page has its
+    // own primary button and would satisfy a document-wide match.
+    const card = html.slice(html.indexOf('id="get"'));
+    expect(card).toMatch(/class="btn btn-primary"[^>]*href="\/tester"/);
+    expect(card).toMatch(/class="btn btn-ghost"[^>]*href="https:\/\/github\.com/);
+  });
 });
