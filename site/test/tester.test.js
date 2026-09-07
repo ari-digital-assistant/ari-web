@@ -67,7 +67,6 @@ describe('tester page', () => {
     // The whole site's argument is that nothing phones home. A Google,
     // Cloudflare or hCaptcha widget here would quietly undo that.
     expect(shipped).not.toMatch(/recaptcha|hcaptcha|turnstile|challenges\.cloudflare|friendlycaptcha/i);
-    expect(html).toContain('No third-party CAPTCHA');
   });
 
   it('links to the privacy section that explains the address', () => {

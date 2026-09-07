@@ -19,7 +19,7 @@ import Base from '../layouts/Base.astro';
 
     <section class="tp-block">
       <h2>What you are signing up for</h2>
-      <p>A pre-release build of the <strong>Android app</strong>, delivered through Google Play's internal testing track. Updates arrive the same way any app update does, often several a week.</p>
+      <p>A pre-release build of the <strong>Android app</strong>, delivered through Google Play's internal testing track. Updates arrive the same way any app update does.</p>
       <p>Be under no illusions: it is early. Things will be half-finished, some will be broken, and the wake word will occasionally ignore you out of sheer spite. That is rather the point — you are here to find that out before everyone else does.</p>
     </section>
 
@@ -28,7 +28,7 @@ import Base from '../layouts/Base.astro';
       <ul>
         <li>An <strong>Android phone running Android 10 or newer</strong>. There is no iOS build, and the Linux desktop app is not part of this programme yet.</li>
         <li>A <strong>Google account signed in to the Play Store</strong> on that phone.</li>
-        <li>Enough patience to send a bug report rather than uninstall in disgust.</li>
+        <li>Patience to work with an early app, encounter bugs, and send bug reports!</li>
       </ul>
     </section>
 
@@ -47,7 +47,7 @@ import Base from '../layouts/Base.astro';
         <span class="tp-num">2</span>
         <div>
           <h3>We add you and send back a link</h3>
-          <p>Your address goes on the tester list in the Play Console, and you get an opt-in link by email. Usually within a day or two — this is a side project, not a support desk.</p>
+          <p>Your address goes on the tester list in the Play Console, and you get an opt-in link by email. You should get your email within 2 days at most, but if not, please email <a href="mailto:hey@heyari.dev">hey@heyari.dev</a>. Please remember this is a voluntary project run by one person!</p>
         </div>
       </div>
 
@@ -59,7 +59,7 @@ import Base from '../layouts/Base.astro';
         </div>
       </div>
 
-      <p class="tp-gotcha"><strong>The one thing people get wrong:</strong> it has to be the Google account that is <em>actually signed in to the Play Store on the phone you will test on</em> — not a work address that forwards to it, and not a second account you never use on that device. Give us the wrong one and the opt-in link will cheerfully tell you the page does not exist.</p>
+      <p class="tp-gotcha"><strong>The one thing people get wrong:</strong> it has to be the Google account that is <em>actually signed in to the Play Store on the phone you will test on</em> — not a work address that forwards to it, and not a second account you never use on that device.</p>
     </section>
 
     <section class="tp-block" id="apply">
@@ -91,8 +91,6 @@ import Base from '../layouts/Base.astro';
           <input id="f-consent" name="consent" type="checkbox" required />
           <span>I agree to Keith Vassallo holding my email address for the purpose of running Ari's testing programme, and I understand I can ask for it to be deleted at any time.</span>
         </label>
-
-        <p class="tp-pow">No third-party CAPTCHA, no puzzle to solve, nothing to click. Your browser does a second or two of arithmetic to prove it is a browser and not a spam cannon — it happens while you read this, and none of it leaves the page.</p>
 
         <div class="tp-actions">
           <button class="btn btn-primary" type="submit" id="f-submit">Apply to test</button>
@@ -180,7 +178,6 @@ import Base from '../layouts/Base.astro';
   .tp-consent input{flex:none; margin-top:3px; width:18px; height:18px; accent-color:var(--sun)}
   .tp-consent input.invalid{outline:2px solid var(--ember); outline-offset:2px}
 
-  .tp-pow{font-size:13.5px; color:var(--muted); line-height:1.45}
   .tp-actions{display:flex; align-items:center; gap:16px; flex-wrap:wrap}
   .tp-actions .btn[disabled]{opacity:.6; cursor:progress}
   .tp-status{font-size:14.5px; font-weight:600}
