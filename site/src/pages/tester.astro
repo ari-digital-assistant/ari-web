@@ -1,0 +1,327 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Linked from the hero CTA. Google Play internal testing is a closed list —
+// there is no self-serve sign-up — so the whole point of this page is to
+// collect the one thing that unblocks it: the Google account email to add in
+// Play Console. Everything else on the form is optional.
+---
+<Base
+  title="Become a tester — Ari"
+  description="Try Ari before it ships. How the Android testing programme works, what you need, and how to apply."
+>
+  <article class="tp-page wrap">
+    <header class="tp-hero">
+      <span class="eyebrow">Internal testing</span>
+      <h1>Get Ari early. Tell us what breaks.</h1>
+      <p class="lede">Ari is in pre-release, and the fastest way to make it good is to put it on real phones. If you fancy running an unfinished assistant and saying what you think of it, we would love to have you.</p>
+    </header>
+
+    <section class="tp-block">
+      <h2>What you are signing up for</h2>
+      <p>A pre-release build of the <strong>Android app</strong>, delivered through Google Play's internal testing track. Updates arrive the same way any app update does, often several a week.</p>
+      <p>Be under no illusions: it is early. Things will be half-finished, some will be broken, and the wake word will occasionally ignore you out of sheer spite. That is rather the point — you are here to find that out before everyone else does.</p>
+    </section>
+
+    <section class="tp-block">
+      <h2>What you need</h2>
+      <ul>
+        <li>An <strong>Android phone running Android 10 or newer</strong>. There is no iOS build, and the Linux desktop app is not part of this programme yet.</li>
+        <li>A <strong>Google account signed in to the Play Store</strong> on that phone.</li>
+        <li>Enough patience to send a bug report rather than uninstall in disgust.</li>
+      </ul>
+    </section>
+
+    <section class="tp-block tp-steps">
+      <h2>How it works</h2>
+
+      <div class="tp-step">
+        <span class="tp-num">1</span>
+        <div>
+          <h3>You send your Google account email</h3>
+          <p>Use the form below. Google's testing track is a closed list, so there is no way to let you sign yourself up — the email address is the only thing that actually unblocks anything.</p>
+        </div>
+      </div>
+
+      <div class="tp-step">
+        <span class="tp-num">2</span>
+        <div>
+          <h3>We add you and send back a link</h3>
+          <p>Your address goes on the tester list in the Play Console, and you get an opt-in link by email. Usually within a day or two — this is a side project, not a support desk.</p>
+        </div>
+      </div>
+
+      <div class="tp-step">
+        <span class="tp-num">3</span>
+        <div>
+          <h3>You opt in and install</h3>
+          <p>Open the link, tap <strong>Become a tester</strong>, then follow it through to Google Play and install as normal. After that Ari updates itself like anything else on your phone.</p>
+        </div>
+      </div>
+
+      <p class="tp-gotcha"><strong>The one thing people get wrong:</strong> it has to be the Google account that is <em>actually signed in to the Play Store on the phone you will test on</em> — not a work address that forwards to it, and not a second account you never use on that device. Give us the wrong one and the opt-in link will cheerfully tell you the page does not exist.</p>
+    </section>
+
+    <section class="tp-block" id="apply">
+      <h2>Apply</h2>
+      <form class="tp-form" id="apply-form" novalidate>
+        <label class="tp-field">
+          <span class="tp-label">Name <span class="tp-opt">optional</span></span>
+          <input id="f-name" name="name" type="text" maxlength="80" autocomplete="given-name" />
+        </label>
+
+        <label class="tp-field">
+          <span class="tp-label">Google account email <span class="tp-req">required</span></span>
+          <input id="f-email" name="email" type="email" maxlength="254" autocomplete="email" required inputmode="email" />
+        </label>
+
+        <label class="tp-field">
+          <span class="tp-label">Anything you want to tell us <span class="tp-opt">optional</span></span>
+          <textarea id="f-note" name="note" maxlength="1000" rows="4" placeholder="Which phone, which Android version, what you are hoping to try — whatever seems useful."></textarea>
+        </label>
+
+        <!-- Honeypot. Hidden from people and from screen readers; a bot that
+             fills every field it finds gives itself away, and the handler
+             quietly drops the submission. -->
+        <div class="tp-hp" aria-hidden="true">
+          <label>Website<input id="f-website" name="website" type="text" tabindex="-1" autocomplete="off" /></label>
+        </div>
+
+        <label class="tp-consent">
+          <input id="f-consent" name="consent" type="checkbox" required />
+          <span>I agree to Keith Vassallo holding my email address for the purpose of running Ari's testing programme, and I understand I can ask for it to be deleted at any time.</span>
+        </label>
+
+        <p class="tp-pow">No third-party CAPTCHA, no puzzle to solve, nothing to click. Your browser does a second or two of arithmetic to prove it is a browser and not a spam cannon — it happens while you read this, and none of it leaves the page.</p>
+
+        <div class="tp-actions">
+          <button class="btn btn-primary" type="submit" id="f-submit">Apply to test</button>
+          <p class="tp-status" id="f-status" role="status" aria-live="polite"></p>
+        </div>
+      </form>
+      <noscript>
+        <p class="tp-noscript">This form needs JavaScript. If you would rather not run it, email <a href="mailto:keith@vassallo.cloud">keith@vassallo.cloud</a> with the words <strong>&ldquo;Ari tester&rdquo;</strong> in the subject and your Google account email in the body.</p>
+      </noscript>
+    </section>
+
+    <section class="tp-block">
+      <h2>What happens to your email address</h2>
+      <p>It reaches us as a single email and goes on the tester list in the Google Play Console. That is the whole of it. It is not added to a mailing list, it is not shared with anyone, and there is nothing else to sign up for.</p>
+      <p>We hold it for as long as you are a tester. Ask us to remove you — by replying to any email from us, or writing to <a href="mailto:keith@vassallo.cloud">keith@vassallo.cloud</a> — and you come off the Play Console list and out of our inbox. The lawful basis is your consent, given by ticking that box.</p>
+      <p>The full picture is in the <a href="/privacy/#testing">privacy notice</a>, and the <a href="/delete-data">data deletion page</a> covers removing everything else Ari might hold.</p>
+    </section>
+  </article>
+</Base>
+<style>
+  /* Scoped page styles in the Dusk system. Shared primitives (.wrap, .eyebrow,
+     .btn/.btn-primary) come from global.css and are NOT redefined. The step
+     rail is the same shape as the one on /delete-data, because it is the same
+     idea — a short ordered process the page exists to explain. */
+  .tp-page{padding-block:60px 96px}
+
+  .tp-hero{max-width:62ch}
+  .tp-hero h1{font-size:clamp(36px,5vw,56px); line-height:1.04; margin-top:16px}
+  .lede{
+    margin-top:22px; font-size:clamp(17px,2vw,20px); line-height:1.5;
+    color:var(--muted); max-width:56ch; font-weight:450;
+  }
+
+  .tp-block{padding:0; margin-block:44px; max-width:68ch}
+  .tp-block h2{font-size:clamp(24px,3vw,32px); line-height:1.12; margin-bottom:14px}
+  .tp-block p{color:var(--ink)}
+  .tp-block p + p{margin-top:14px}
+  .tp-block ul{margin:14px 0 0; padding-left:22px; color:var(--ink)}
+  .tp-block li + li{margin-top:8px}
+  .tp-block a{color:var(--sun); text-decoration:underline; text-underline-offset:2px}
+
+  .tp-steps{max-width:72ch}
+  .tp-step{
+    display:flex; gap:18px; align-items:flex-start;
+    background:var(--surface); border:1px solid var(--hair);
+    border-radius:16px; padding:22px 24px; margin-top:16px;
+  }
+  .tp-num{
+    flex:none; width:34px; height:34px; border-radius:999px;
+    background:var(--sun); color:#fff; font-weight:800; font-size:16px;
+    display:grid; place-items:center; font-variant-numeric:tabular-nums;
+  }
+  .tp-step h3{font-size:18px; margin:2px 0 8px; line-height:1.25}
+  .tp-step p{font-size:15.5px}
+
+  .tp-gotcha{
+    margin-top:18px; padding:16px 18px; font-size:15px;
+    background:var(--surface-2); border:1px solid var(--hair); border-radius:12px;
+  }
+
+  .tp-form{display:flex; flex-direction:column; gap:18px; margin-top:20px; max-width:52ch}
+  .tp-field{display:flex; flex-direction:column; gap:7px}
+  .tp-label{font-size:14px; font-weight:700; display:flex; align-items:baseline; gap:8px}
+  .tp-opt, .tp-req{font-family:var(--mono); font-size:11px; font-weight:500; letter-spacing:.08em; text-transform:uppercase}
+  .tp-opt{color:var(--muted)}
+  .tp-req{color:var(--sun)}
+  .tp-form input[type="text"], .tp-form input[type="email"], .tp-form textarea{
+    width:100%; padding:12px 14px; border-radius:12px; border:1px solid var(--hair);
+    background:var(--surface); color:var(--ink); font-family:"Manrope"; font-size:15px;
+    line-height:1.5;
+  }
+  .tp-form textarea{resize:vertical; min-height:96px}
+  .tp-form input:focus, .tp-form textarea:focus{
+    outline:none; border-color:var(--sun);
+    box-shadow:0 0 0 4px color-mix(in srgb,var(--sun) 18%, transparent);
+  }
+  /* Flagged by the script when the field is the reason the submit bounced. */
+  .tp-form .invalid{border-color:var(--ember)}
+
+  /* Off-screen rather than display:none — some bots skip hidden inputs, and
+     aria-hidden on the wrapper keeps it away from screen readers. */
+  .tp-hp{position:absolute; left:-9999px; width:1px; height:1px; overflow:hidden}
+
+  .tp-consent{display:flex; gap:12px; align-items:flex-start; font-size:14.5px; color:var(--ink); line-height:1.45}
+  .tp-consent input{flex:none; margin-top:3px; width:18px; height:18px; accent-color:var(--sun)}
+  .tp-consent input.invalid{outline:2px solid var(--ember); outline-offset:2px}
+
+  .tp-pow{font-size:13.5px; color:var(--muted); line-height:1.45}
+  .tp-actions{display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+  .tp-actions .btn[disabled]{opacity:.6; cursor:progress}
+  .tp-status{font-size:14.5px; font-weight:600}
+  .tp-status.ok{color:var(--on-device)}
+  .tp-status.bad{color:var(--ember)}
+
+  .tp-noscript{
+    margin-top:18px; padding:16px 18px; font-size:15px;
+    background:var(--surface-2); border:1px solid var(--hair); border-radius:12px;
+  }
+
+  @media (max-width:560px){
+    .tp-step{flex-direction:column; gap:12px}
+  }
+</style>
+<script>
+  const CHALLENGE_URL = '/api/tester/challenge';
+  const SUBMIT_URL = '/api/tester';
+
+  const form = document.getElementById('apply-form');
+  const email = document.getElementById('f-email');
+  const consent = document.getElementById('f-consent');
+  const submit = document.getElementById('f-submit');
+  const status = document.getElementById('f-status');
+
+  const encoder = new TextEncoder();
+  const sha256 = async (text) => {
+    const digest = await crypto.subtle.digest('SHA-256', encoder.encode(text));
+    return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  };
+
+  function say(text, kind) {
+    status.textContent = text;
+    status.className = kind ? `tp-status ${kind}` : 'tp-status';
+  }
+
+  function flag(field, message) {
+    field.classList.add('invalid');
+    field.focus();
+    say(message, 'bad');
+  }
+
+  /**
+   * Fetch a challenge for this address and brute-force it. The server binds
+   * each challenge to one address and signs it, so the answer is worth exactly
+   * that address and only for a few minutes.
+   */
+  async function solve(address) {
+    const res = await fetch(CHALLENGE_URL, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ emailHash: await sha256(address.toLowerCase()) }),
+    });
+    if (!res.ok) throw new Error(String(res.status));
+    const challenge = await res.json();
+    if (challenge.algorithm !== 'SHA-256') throw new Error('unexpected algorithm');
+
+    for (let number = 0; number <= challenge.maxnumber; number++) {
+      if (await sha256(challenge.salt + number) === challenge.challenge) {
+        return btoa(JSON.stringify({ ...challenge, number }));
+      }
+      // Hand the browser a turn now and then. Each digest resolves on the
+      // microtask queue, and tens of thousands of them back to back would
+      // otherwise keep painting waiting until the whole thing finished.
+      if (number % 2000 === 1999) await new Promise((r) => setTimeout(r));
+    }
+    throw new Error('no solution below maxnumber');
+  }
+
+  // Started as soon as the email field loses focus, so the work is normally
+  // done by the time anyone reaches the button. Keyed by address, because
+  // editing the email invalidates the answer.
+  let pending = null;
+
+  function work(address) {
+    if (!pending || pending.address !== address) {
+      const promise = solve(address);
+      // Reported at submit, where there is somewhere to say it. Attached here
+      // only so an abandoned solve is not an unhandled rejection.
+      promise.catch(() => {});
+      pending = { address, promise };
+    }
+    return pending.promise;
+  }
+
+  email.addEventListener('blur', () => {
+    const address = email.value.trim();
+    if (address && email.checkValidity()) work(address);
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    email.classList.remove('invalid');
+    consent.classList.remove('invalid');
+
+    // Checked here as well as in the handler so the common mistakes cost a
+    // round trip to nowhere rather than a round trip to London.
+    const address = email.value.trim();
+    if (!address) return flag(email, 'We need an email address to add you.');
+    if (!email.checkValidity()) return flag(email, 'That does not look like an email address.');
+    if (!consent.checked) return flag(consent, 'Please tick the consent box so we may hold your address.');
+
+    submit.disabled = true;
+
+    let altcha;
+    try {
+      say('Checking you are a person…', '');
+      altcha = await work(address);
+    } catch {
+      pending = null;
+      say('The anti-spam check could not run. Please email keith@vassallo.cloud instead.', 'bad');
+      submit.disabled = false;
+      return;
+    }
+
+    say('Sending…', '');
+    try {
+      const res = await fetch(SUBMIT_URL, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          name: document.getElementById('f-name').value,
+          email: address,
+          note: document.getElementById('f-note').value,
+          website: document.getElementById('f-website').value,
+          consent: consent.checked,
+          altcha,
+        }),
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      form.reset();
+      pending = null;
+      say('Got it. We will email you an opt-in link once you are on the list.', 'ok');
+    } catch {
+      // A stale challenge is one of the ways this fails, so drop the answer
+      // and make a retry solve a fresh one rather than resending a dud.
+      pending = null;
+      // Deliberately offers the fallback rather than just apologising: the
+      // whole page is worthless if a failed POST is where the road ends.
+      say('That did not send. Please email keith@vassallo.cloud instead.', 'bad');
+      submit.disabled = false;
+    }
+  });
+</script>

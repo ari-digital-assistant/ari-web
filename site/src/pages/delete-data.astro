@@ -23,7 +23,7 @@ import Base from '../layouts/Base.astro';
 
     <section class="dd-block">
       <h2>What we actually hold</h2>
-      <p>One thing, and only if you chose to send it: <strong>a bug report</strong>. Ari has no accounts, no profiles and no analytics, so unless you have tapped the report button and ticked the consent box, we hold nothing about you whatsoever.</p>
+      <p>At most two things, and only if you chose to send them. <strong>A bug report</strong>, if you tapped the report button in the app and ticked the consent box. And <strong>your email address</strong>, if you applied to the <a href="/tester">testing programme</a>. Ari has no accounts, no profiles and no analytics, so if you have done neither of those, we hold nothing about you whatsoever.</p>
       <p>A bug report has two halves. The <strong>public half</strong> becomes an issue on GitHub — what you typed, your app and Android versions, your device model. The <strong>private half</strong> is the diagnostic files you ticked: a scrubbed log, a screenshot, this session's conversation, voice recordings.</p>
     </section>
 
@@ -50,6 +50,15 @@ import Base from '../layouts/Base.astro';
 
       <div class="dd-step">
         <span class="dd-num">3</span>
+        <div>
+          <h3>If you applied to be a tester</h3>
+          <p>Email <a href="mailto:keith@vassallo.cloud">keith@vassallo.cloud</a>, or simply reply to any email we have sent you, and ask to come off the list. We take your address off the tester list in the Google Play Console and delete the application from our inbox.</p>
+          <p>Do note that this removes your access to the pre-release builds, because being on that list is what grants it.</p>
+        </div>
+      </div>
+
+      <div class="dd-step">
+        <span class="dd-num">4</span>
         <div>
           <h3>Everything on the phone itself</h3>
           <p>Conversation history, voice recordings, your settings and anything Ari has remembered about you are all on the device. Clear them in <strong>Settings › Debug</strong>, or uninstall Ari — uninstalling takes the lot with it.</p>
@@ -80,6 +89,11 @@ import Base from '../layouts/Base.astro';
             <td>Kept indefinitely.</td>
           </tr>
           <tr>
+            <td>Your email address, if you applied to be a tester</td>
+            <td><strong>Deleted</strong> from the Play Console tester list and from our inbox, on request.</td>
+            <td>Held while you are a tester, and not used for anything else.</td>
+          </tr>
+          <tr>
             <td>Everything on your phone</td>
             <td>—</td>
             <td>Never sent to us. Yours to clear or uninstall at any time.</td>
@@ -92,7 +106,7 @@ import Base from '../layouts/Base.astro';
     <section class="dd-block">
       <h2>Retention</h2>
       <p><strong>90 days, automatically, with no exceptions.</strong> Diagnostic files and the record that ties them to a report expire on their own whether or not you ask. Withdrawing simply brings that forward to now.</p>
-      <p>More detail on all of this is in the <a href="/privacy/#bug-reports">privacy notice</a>.</p>
+      <p>Tester email addresses sit outside that clock: we hold one for as long as you are a tester, and delete it when you ask. More detail on all of this is in the privacy notice — <a href="/privacy/#bug-reports">bug reports</a> and <a href="/privacy/#testing">the testing programme</a>.</p>
     </section>
   </article>
 </Base>

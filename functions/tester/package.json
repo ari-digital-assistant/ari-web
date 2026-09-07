@@ -1,0 +1,12 @@
+{
+  "name": "@ari-web/tester-fn",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "description": "Lambda behind /api/tester — emails a testing-programme application to the maintainer.",
+  "main": "index.mjs",
+  "dependencies": {
+    "@aws-sdk/client-sesv2": "3.1119.0",
+    "altcha-lib": "2.4.0"
+  }
+}

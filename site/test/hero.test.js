@@ -13,7 +13,11 @@ describe('home hero', () => {
     expect(html).toContain('never');
     expect(html).toContain('phones home');
   });
-  it('has an honest pre-release primary CTA (no fake store links)', () => {
+  it('leads with the tester CTA, which is what the project needs right now', () => {
+    expect(html).toMatch(/class="btn btn-primary"[^>]*href="\/tester"/);
+    expect(html).toContain('Become a tester');
+  });
+  it('keeps an honest pre-release GitHub CTA (no fake store links)', () => {
     expect(html).toContain('Star on GitHub');
     expect(html).not.toMatch(/play\.google\.com|f-droid\.org\/[a-z]/i);
   });

@@ -9,7 +9,8 @@
     "site",
     "docs",
     "functions/report",
-    "functions/bugreport"
+    "functions/bugreport",
+    "functions/tester"
   ],
   "scripts": {
     "dev": "npm run dev --workspace site",
