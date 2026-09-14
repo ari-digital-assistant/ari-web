@@ -1,0 +1,146 @@
+---
+import { getImage } from 'astro:assets';
+import { registrySkills } from '../lib/registry.js';
+import { isNet, niceName, platformLabel, screenshotPlatforms, screenshotUrls, REGISTRY_BASE } from '../lib/skills.js';
+
+// Same build-time fetch the /skills pages use — registryIndex() memoises, so
+// this costs nothing extra.
+const skills = await registrySkills();
+
+// Thumbnails are built from the registry copy, not the /registry mirror: the
+// mirror serves the screenshot at its full 1080px, and fifteen of those to
+// draw a strip of 112px thumbs is ~600kB nobody needs. getImage downloads and
+// resizes at build time, so the page still only ever loads our own files —
+// which is the whole point of the mirror.
+//
+// The crop is baked in rather than left to CSS: twice the .thumb box, cover
+// from the top, which lands on the request and Ari's reply and throws away the
+// empty scroll and the input bar at the foot of every screenshot. Passing a
+// width alone does NOT scale the height to match — it squashes the shot to the
+// source's full height — so both dimensions are given.
+const cards = await Promise.all(skills.map(async (s) => {
+  const platform = screenshotPlatforms(s)[0] || '';
+  const [shot] = platform ? screenshotUrls(s, platform, REGISTRY_BASE) : [];
+  return {
+    s,
+    platform,
+    thumb: shot ? await getImage({ src: shot, width: 224, height: 392, fit: 'cover', position: 'top', format: 'webp' }) : null,
+  };
+}));
+
+// Two copies of the strip make the wrap seamless: the animation travels
+// exactly one copy's width and snaps back to an identical frame.
+const seconds = skills.length * 5;
+---
+{cards.length > 0 && (
+<section class="shelf">
+  <div class="wrap sec-head">
+    <span class="eyebrow">Skills</span>
+    <h2>Ari learns new tricks without a new release.</h2>
+    <p>Skills live outside the app, so the shelf fills up between releases. Here's what's on it today — install any of them from inside Ari.</p>
+  </div>
+  <div class="marquee" style={`--shelf-duration:${seconds}s`}>
+    {[false, true].map((clone) => (
+      <div class="track" aria-hidden={clone ? 'true' : undefined}>
+        {cards.map(({ s, platform, thumb }) => (
+          <a class="tile" href={`/skills/${s.id}`} tabindex={clone ? -1 : undefined}>
+            <div class="thumb">
+              {thumb
+                ? <img src={thumb.src} width={thumb.attributes.width} height={thumb.attributes.height} loading="lazy" decoding="async" alt={clone ? '' : `${niceName(s.name)} on ${platformLabel(platform)}`} />
+                : <span class="no-shot">Screenshot<br />coming soon</span>}
+            </div>
+            <div class="tile-text">
+              <div class="tile-top">
+                <h3>{niceName(s.name)}</h3>
+                <span class="kind" data-type={s.type}>{s.type}</span>
+              </div>
+              <p class="blurb">{s.description}</p>
+              <span class={isNet(s) ? 'where net' : 'where local'}>
+                <span class="dot"></span>{isNet(s) ? 'uses network' : 'on-device'}
+              </span>
+            </div>
+          </a>
+        ))}
+      </div>
+    ))}
+  </div>
+  <p class="shelf-cta wrap"><a href="/skills">Browse every skill →</a></p>
+</section>
+)}
+<style>
+  .shelf{overflow:hidden}
+  /* The strip runs edge to edge, so it sits outside .wrap and fades out at
+     both sides rather than stopping against the viewport with a hard cut. */
+  .marquee{
+    margin-top:34px; display:flex; gap:18px; overflow:hidden;
+    -webkit-mask-image:linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+    mask-image:linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  }
+  .track{display:flex; gap:18px; flex:none; animation:shelf var(--shelf-duration) linear infinite}
+  /* Hovering to read a card, or tabbing into one, should not be a moving
+     target. */
+  .marquee:hover .track, .marquee:focus-within .track{animation-play-state:paused}
+  @keyframes shelf{from{transform:translateX(0)}to{transform:translateX(calc(-100% - 18px))}}
+
+  .tile{
+    flex:none; width:360px; padding:14px; border-radius:16px;
+    background:var(--surface); border:1px solid var(--hair); box-shadow:var(--shadow);
+    display:flex; gap:14px; transition:border-color .18s, transform .18s;
+  }
+  .tile:hover{border-color:var(--plum); transform:translateY(-3px)}
+
+  /* A portrait window, sized to the crop getImage already made. Still reads as
+     a phone screen, without a phone screen's height. */
+  .thumb{
+    flex:none; width:112px; height:196px; border-radius:12px; overflow:hidden;
+    border:1px solid var(--hair); background:var(--surface-2);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .thumb img{width:100%; height:100%; object-fit:cover; display:block}
+  .no-shot{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--muted); text-align:center; line-height:1.7;
+  }
+
+  .tile-text{display:flex; flex-direction:column; gap:10px; min-width:0; flex:1}
+  .tile-top{display:flex; align-items:flex-start; justify-content:space-between; gap:10px}
+  .tile h3{font-size:16px; letter-spacing:-.02em}
+  .blurb{
+    color:var(--muted); font-size:13.5px; line-height:1.5;
+    display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  /* The type goes on a data attribute, never a class. Spelling it as a class
+     put `skill` — a registry value — into the same namespace as this file's
+     own card class, so every skill's badge matched .tile's old name and was
+     styled as a 268px card. Two more reasons to keep these names odd: the
+     skills page declares .card/.badge/.priv/.desc in an `is:global` block
+     (site-wide, not page-wide), and a scoped rule ties with a global one on
+     specificity, leaving bundle order to decide. */
+  .kind{
+    font-family:var(--mono); font-size:9.5px; letter-spacing:.08em; text-transform:uppercase;
+    padding:3px 7px; border-radius:5px; color:#fff; background:var(--plum);
+    flex:none; white-space:nowrap; align-self:flex-start;
+  }
+  .kind[data-type="assistant"]{background:var(--sun)}
+  .where{display:flex; align-items:center; gap:7px; font-family:var(--mono); font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin-top:auto}
+  .where .dot{width:7px; height:7px; border-radius:50%; flex:none}
+  .where.local .dot{background:var(--on-device)}
+  .where.net .dot{background:var(--plum)}
+
+  .shelf-cta{margin-top:28px; font-weight:700; font-size:15px}
+  .shelf-cta a{color:var(--sun); transition:opacity .15s}
+  .shelf-cta a:hover{opacity:.75}
+
+  @media (max-width:480px){
+    .tile{width:302px}
+    .thumb{width:94px; height:168px}
+  }
+
+  /* With animation off (the global prefers-reduced-motion guard), the strip
+     would sit frozen on its first few cards. Let it be scrolled by hand
+     instead, and drop the duplicate that only existed to hide the wrap. */
+  @media (prefers-reduced-motion:reduce){
+    .marquee{overflow-x:auto}
+    .track[aria-hidden="true"]{display:none}
+  }
+</style>

@@ -13,6 +13,10 @@ p{margin:0}
 @media (prefers-reduced-motion:reduce){*{animation:none !important; scroll-behavior:auto !important}}
 .wrap{max-width:1120px; margin:0 auto; padding:0 24px}
 .eyebrow{font-family:var(--mono); font-size:12px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--sun)}
+/* The lockup (mark + wordmark) is identical in Nav and Footer. It was scoped
+   inside Nav, which left the footer's copy with no flex and no gap — the mark
+   and the word ran together. Shared markup wants a shared rule. */
+.brand{display:flex; align-items:center; gap:11px; font-weight:800; letter-spacing:-.02em; font-size:19px}
 /* Shared buttons — ported verbatim from docs/design-reference/dusk-mockup.html.
    Global (not scoped to Nav) so Hero and any future component reuse them. */
 .btn{
@@ -27,7 +31,7 @@ p{margin:0}
 .btn-ghost:hover{border-color:var(--plum)}
 /* Section shell — ported verbatim from docs/design-reference/dusk-mockup.html.
    The .sec-head block (eyebrow + h2 + p) is shared by every Phase 1 section
-   (Demo, Privacy, Features, GetAri), so it lives here rather than scoped. */
+   (Privacy, Features, GetAri), so it lives here rather than scoped. */
 section{padding:72px 0}
 .sec-head{max-width:52ch}
 .sec-head h2{font-size:clamp(28px,4vw,40px); line-height:1.08; margin-top:14px}

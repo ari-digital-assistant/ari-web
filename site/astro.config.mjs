@@ -6,6 +6,10 @@ import mdx from '@astrojs/mdx';
 export default defineConfig({
   site: 'https://heyari.dev',
   build: { format: 'directory' }, // <route>/index.html — matches cf-rewrite.js
+  // The home page shelf resizes registry screenshots down to thumbnails, which
+  // Astro will only do for a host named here. Build-time only: the thumbnails
+  // it writes are served from our own origin, same as the /registry mirror.
+  image: { domains: ['raw.githubusercontent.com'] },
   i18n: {
     defaultLocale: 'en',
     locales: ['en'],

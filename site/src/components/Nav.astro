@@ -22,14 +22,15 @@ import ThemeToggle from './ThemeToggle.astro';
 </header>
 <style>
   /* Nav-specific rules ported verbatim from docs/design-reference/dusk-mockup.html.
-     Shared button styles (.btn/.btn-primary/.btn-ghost) live in global.css so
-     other components (e.g. Hero) get them too. */
+     Shared styles (.btn/.btn-primary/.btn-ghost, and .brand, which the footer
+     uses too) live in global.css so other components get them. */
   .nav{position:sticky; top:0; z-index:50; backdrop-filter:saturate(1.2) blur(14px); background:color-mix(in srgb, var(--bg) 78%, transparent); border-bottom:1px solid var(--hair)}
   .nav-in{display:flex; align-items:center; gap:24px; height:64px}
-  .brand{display:flex; align-items:center; gap:11px; font-weight:800; letter-spacing:-.02em; font-size:19px}
   .nav-links{display:flex; gap:26px; margin-left:auto; font-weight:500; font-size:15px; color:var(--muted)}
   .nav-links a{transition:color .2s} .nav-links a:hover{color:var(--ink)}
   .nav-cta{display:flex; align-items:center; gap:10px}
   .nav-links a, .nav-cta .btn{white-space:nowrap}
-  @media (max-width:860px){.nav-links{display:none}}
+  /* The links carry the margin-left:auto that pushes the buttons to the right
+     edge, so hiding them left the whole bar bunched up against the logo. */
+  @media (max-width:860px){.nav-links{display:none} .nav-cta{margin-left:auto}}
 </style>
