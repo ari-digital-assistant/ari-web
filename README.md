@@ -1,40 +1,68 @@
 # ari-web
 
-Static hosting for **heyari.dev** — the marketing site and the preserved Ari
-OAuth / Android App-Link surface today, with the skills browser and
-documentation arriving in later phases.
+Static hosting for **heyari.dev** — the marketing site, the skills browser, the
+documentation, and the Ari OAuth / Android App-Link surface. Three small Lambdas
+sit behind `/api/*` for bug reports and tester signup; everything else is files
+on S3.
 
 ## Layout
-- `site/` — Astro marketing site. Its `public/` carries the preserved surface:
+- `site/` — Astro marketing site and skills browser (`/`, `/skills`,
+  `/skills/<id>`, `/privacy`, `/tester`, `/delete-data`, `/404`). Its `public/`
+  carries the App-Link surface:
   - `public/oauth/client/index.html` — IndieAuth **client_id** page.
   - `public/oauth/callback/index.html` — OAuth **redirect_uri** landing page
     (intercepted by the verified Android App Link in practice).
   - `public/.well-known/assetlinks.json` — Android **Digital Asset Links**
     (`dev.heyari.ari` + signing-cert SHA-256 fingerprints).
-- `docs/` — VitePress documentation (added in a later phase).
+- `docs/` — VitePress documentation, served at `/docs`.
+- `functions/` — the `/api/*` Lambdas: `report` (maintainer reports),
+  `bugreport` (the in-app bug reporter), `tester` (Play internal-testing
+  signup). `deploy.sh` updates their code; it never creates them.
+- `infra/` — one-off provisioning and rollback scripts, plus dated distribution
+  backups. Run by hand, never by CI.
 - `cf-rewrite.js` — CloudFront **Function**: appends `index.html` to directory
-  paths and routes `/skills/<id>` to the detail template. Published by
-  `deploy.sh`, so this file is the one serving traffic.
-- `scripts/assemble.mjs` — merges build outputs into `dist/`.
+  paths, routes `/skills/<id>` to the detail template, and resolves the docs
+  section indexes. Published by `deploy.sh`, so this file is the one serving
+  traffic.
+- `scripts/assemble.mjs` — merges site + docs builds into `dist/` and injects
+  the prerendered skill ids and docs directories into `build/cf-rewrite.js`.
 - `deploy.sh` — builds, assembles, `aws s3 sync`, publishes `cf-rewrite.js`,
-  CloudFront invalidation.
+  updates the Lambdas, invalidates CloudFront.
+- `buildspec.yml` — the CodeBuild pipeline that runs all of the above.
 
 ## Develop
 ```bash
 npm install
-npm run dev        # Astro dev server
-npm test           # cf-rewrite unit tests + build-output assertions
+npm run dev                        # Astro dev server
+npm run dev --workspace docs       # VitePress dev server
+npm run build                      # site + docs
+npm test                           # routing, Lambdas, and page assertions
 ```
 
+The page suites run `astro build` themselves, so `npm test` needs no prior
+build — but it does need a complete `node_modules`. If vitest dies looking for
+`tinypool`, run `npm ci`.
+
 ## Deploy
+
+A push to `main` triggers CodeBuild, which gates on `npm run audit` and
+`npm test` **before** `deploy.sh` touches S3. AWS access comes from the
+CodeBuild project's IAM service role — no stored keys, no OIDC role. The
+required permissions are listed at the top of `buildspec.yml`.
+
+To deploy by hand:
+
 ```bash
 BUCKET=heyari-dev-static DIST_ID=E3DZC8ECXAT4FZ ./deploy.sh
 ```
 
 ## Infra
 Private S3 (`eu-west-2`) → CloudFront (HTTPS, OAC) → apex `heyari.dev` via
-Route53; ACM cert in `us-east-1`. Fully serverless (no Lambda). Design +
-runbook: `../docs/superpowers/specs/2026-07-24-heyari-dev-website-design.md`.
+Route53; ACM cert in `us-east-1`. Everything under `/docs`, `/skills` and the
+marketing pages is prerendered and static. The only compute is the three
+`/api/*` Lambdas in `eu-west-2`, created by the `infra/provision-*-api.sh`
+scripts — CI only ever updates code on infrastructure that already exists.
+Design + runbook: `../docs/superpowers/specs/2026-07-24-heyari-dev-website-design.md`.
 
 URL routing is the `heyari-rewrite` CloudFront Function, sourced from
 `cf-rewrite.js` and published by `deploy.sh`. It was manually managed until
@@ -66,40 +94,50 @@ get this page too, not VitePress's own 404, since error responses are
 distribution-wide and cannot vary per path.
 
 ## Fingerprints (assetlinks.json)
-`sha256_cert_fingerprints` holds one entry: the **shared debug key** committed
-at `ari-android/app/debug.keystore`. Every machine and CI runner signs debug
-builds with it, so there is exactly one debug fingerprint to publish rather
-than one per developer. Append the **release** (self keystore or Play App
-Signing) and **F-Droid** fingerprints before those channels ship — a missing
-channel fingerprint silently breaks App Link verification for that channel.
 
-Silently is the word. Android reports `heyari.dev: legacy_failure` and simply
-declines to hand the callback to the app — the browser keeps the redirect and
-shows a bare landing page with nothing to explain itself. Home Assistant
-sign-in dead-ends there. Check with:
+`sha256_cert_fingerprints` carries one entry per signing certificate Ari ships
+through:
+
+| Fingerprint starts | Channel |
+|---|---|
+| `6C:D9:DF:…` | **Play app signing** — every install from the store. Google holds this key. |
+| `17:39:84:…` | **Upload key** — the beta and release APKs built here and sideloaded. |
+
+Play App Signing strips the upload signature and re-signs with Google's own key,
+so a store install presents a certificate the upload key knows nothing about.
+Both entries are pinned by `site/test/preserved.test.js`, because losing one
+costs an afternoon to diagnose and nothing to prevent.
+
+The **shared debug key was removed on 2026-09-14**. It was public by design —
+anyone could build a debug APK that App Links would trust for heyari.dev — and
+debug builds no longer need to finish an OAuth flow through a verified link.
+
+Silence is how all of this fails. Android reports `heyari.dev: legacy_failure`
+and simply declines to hand the callback to the app — the browser keeps the
+redirect and shows a bare landing page with nothing to explain itself. Home
+Assistant sign-in dead-ends there. Check with:
 
 ```bash
 adb shell pm get-app-links dev.heyari.ari      # want: heyari.dev: approved
 ```
 
-If it fails, confirm the APK is actually signed with the shared key rather than
-a leftover per-machine one:
+Verification also needs this site deployed — a fingerprint only counts once
+heyari.dev is actually serving it.
 
-```bash
-apksigner verify --print-certs app/build/outputs/apk/debug/app-debug.apk
-# want SHA-256 digest 9eb9bef9…, DN "CN=Ari Debug"
-```
-
-Verification also needs this site deployed — the fingerprint only counts once
-heyari.dev is actually serving it. To unblock a machine before that, approve
-the domain locally; note it is per-install and lost on every uninstall:
+**On a debug build it will never say `approved`**, by design, since that
+fingerprint is gone. Approve the domain locally instead; it is per-install and
+lost on every uninstall:
 
 ```bash
 adb shell pm set-app-links --package dev.heyari.ari 2 heyari.dev
 ```
 
-**Before public release**, drop the debug fingerprint from this file. It is
-public by design, so anyone can build a debug APK that App Links will trust for
-heyari.dev. The OAuth flow uses PKCE (S256), so an intercepted authorization
-code is not redeemable without the verifier that never leaves the real app —
-but that is a mitigation, not a reason to ship it.
+If a *beta or release* build fails verification, confirm the APK is signed with
+the upload key rather than a leftover per-machine one:
+
+```bash
+apksigner verify --print-certs app/build/outputs/apk/beta/app-beta.apk
+```
+
+Add the **F-Droid** fingerprint here before that channel ships. A missing
+channel fingerprint breaks App Link verification for that channel, silently.
