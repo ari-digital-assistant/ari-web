@@ -1,0 +1,14 @@
+{
+  "name": "@ari-web/contrib-fn",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "description": "Lambda behind /api/contrib — hands the app pre-signed URLs for the recordings a user has chosen to contribute, and erases them on request.",
+  "main": "index.mjs",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "3.1119.0",
+    "@aws-sdk/client-s3": "3.1119.0",
+    "@aws-sdk/lib-dynamodb": "3.1119.0",
+    "@aws-sdk/s3-request-presigner": "3.1119.0"
+  }
+}

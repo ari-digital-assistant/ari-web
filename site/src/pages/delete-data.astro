@@ -23,7 +23,7 @@ import Base from '../layouts/Base.astro';
 
     <section class="dd-block">
       <h2>What we actually hold</h2>
-      <p>At most two things, and only if you chose to send them. <strong>A bug report</strong>, if you tapped the report button in the app and ticked the consent box. And <strong>your email address</strong>, if you applied to the <a href="/tester">testing programme</a>. Ari has no accounts, no profiles and no analytics, so if you have done neither of those, we hold nothing about you whatsoever.</p>
+      <p>At most three things, and only if you chose to send them. <strong>A bug report</strong>, if you tapped the report button in the app and ticked the consent box. <strong>Contributed recordings</strong>, if you switched on sharing in Settings › Developer › Recordings. And <strong>your email address</strong>, if you applied to the <a href="/tester">testing programme</a>. Ari has no accounts, no profiles and no analytics, so if you have done none of those, we hold nothing about you whatsoever.</p>
       <p>A bug report has two halves. The <strong>public half</strong> becomes an issue on GitHub — what you typed, your app and Android versions, your device model. The <strong>private half</strong> is the diagnostic files you ticked: a scrubbed log, a screenshot, this session's conversation, voice recordings.</p>
     </section>
 
@@ -42,14 +42,24 @@ import Base from '../layouts/Base.astro';
       <div class="dd-step">
         <span class="dd-num">2</span>
         <div>
-          <h3>If you no longer have the phone</h3>
-          <p>That list lives only on the device that sent the report, so a reinstall or a new phone leaves you without it. Email <a href="mailto:privacy@heyari.dev">privacy@heyari.dev</a> with the words <strong>&ldquo;Ari data deletion&rdquo;</strong> in the subject.</p>
-          <p>Include the report ID if you have it — it looks like <code>r_01J…</code> and appears at the bottom of the GitHub issue. If you do not, say roughly when you sent the report and what it was about, and we will find it.</p>
+          <h3>Recordings you chose to share</h3>
+          <p>Open Ari and go to <strong>Settings › Developer › Recordings</strong>. Tap <strong>Delete my shared data</strong> and confirm.</p>
+          <p>Every recording stored under your contributor code is erased and sharing is switched off, so nothing new goes up either. Recordings on the phone itself are left alone — clear those with the delete buttons on the same screen.</p>
         </div>
       </div>
 
       <div class="dd-step">
         <span class="dd-num">3</span>
+        <div>
+          <h3>If you no longer have the phone</h3>
+          <p>That list lives only on the device that sent the report, so a reinstall or a new phone leaves you without it. Email <a href="mailto:privacy@heyari.dev">privacy@heyari.dev</a> with the words <strong>&ldquo;Ari data deletion&rdquo;</strong> in the subject.</p>
+          <p>Include the report ID if you have it — it looks like <code>r_01J…</code> and appears at the bottom of the GitHub issue. If you do not, say roughly when you sent the report and what it was about, and we will find it.</p>
+          <p>For recordings, include your <strong>contributor code</strong> — the one shown on the Recordings screen, which looks like <code>8b1d4e70-9c2a-…</code>. It is the only thing that identifies your recordings, so without it there is genuinely nothing we can look up. That is the same property that stops anybody else deleting them.</p>
+        </div>
+      </div>
+
+      <div class="dd-step">
+        <span class="dd-num">4</span>
         <div>
           <h3>If you applied to be a tester</h3>
           <p>Email <a href="mailto:privacy@heyari.dev">privacy@heyari.dev</a>, or simply reply to any email we have sent you, and ask to come off the list. We take your address off the tester list in the Google Play Console and delete the application from our inbox.</p>
@@ -58,10 +68,10 @@ import Base from '../layouts/Base.astro';
       </div>
 
       <div class="dd-step">
-        <span class="dd-num">4</span>
+        <span class="dd-num">5</span>
         <div>
           <h3>Everything on the phone itself</h3>
-          <p>Conversation history, voice recordings, your settings and anything Ari has remembered about you are all on the device. Clear them in <strong>Settings › Debug</strong>, or uninstall Ari — uninstalling takes the lot with it.</p>
+          <p>Conversation history, voice recordings, your settings and anything Ari has remembered about you are all on the device. Clear them in <strong>Settings › Developer › Recordings</strong>, or uninstall Ari — uninstalling takes the lot with it.</p>
         </div>
       </div>
     </section>
@@ -89,6 +99,16 @@ import Base from '../layouts/Base.astro';
             <td>Kept indefinitely.</td>
           </tr>
           <tr>
+            <td>Recordings you chose to contribute</td>
+            <td><strong>Erased,</strong> and sharing is switched off so no more go up.</td>
+            <td>Kept until you ask — there is no clock on these, because a training set that deletes itself is no use.</td>
+          </tr>
+          <tr>
+            <td>A model already trained on those recordings</td>
+            <td><strong>Unchanged.</strong> A model cannot be untrained — see below.</td>
+            <td>Ships with Ari like any other part of the app.</td>
+          </tr>
+          <tr>
             <td>Your email address, if you applied to be a tester</td>
             <td><strong>Deleted</strong> from the Play Console tester list and from our inbox, on request.</td>
             <td>Held while you are a tester, and not used for anything else.</td>
@@ -101,12 +121,14 @@ import Base from '../layouts/Base.astro';
         </tbody>
       </table>
       <p class="dd-note"><strong>The honest caveat:</strong> withdrawing takes your words out of view, not out of the world. GitHub retains the edit history of every issue, so somebody who goes looking can still read what was originally written. The files are the part we can genuinely promise are gone, because those are the part we hold.</p>
+      <p class="dd-note"><strong>And the same in the other direction:</strong> deleting contributed recordings erases the audio, and it cannot reach into a model that has already learned from it. We would rather say that than let you assume otherwise.</p>
     </section>
 
     <section class="dd-block">
       <h2>Retention</h2>
-      <p><strong>90 days, automatically, with no exceptions.</strong> Diagnostic files and the record that ties them to a report expire on their own whether or not you ask. Withdrawing simply brings that forward to now.</p>
-      <p>Tester email addresses sit outside that clock: we hold one for as long as you are a tester, and delete it when you ask. More detail on all of this is in the privacy notice — <a href="/privacy/#bug-reports">bug reports</a> and <a href="/privacy/#testing">the testing programme</a>.</p>
+      <p><strong>Bug reports: 90 days, automatically, with no exceptions.</strong> Diagnostic files and the record that ties them to a report expire on their own whether or not you ask. Withdrawing simply brings that forward to now.</p>
+      <p><strong>Contributed recordings: kept until you ask.</strong> They are a training set, and one that expired every 90 days would never be worth training on. That is the trade, said plainly rather than buried: they stay until you delete them, and deleting is two taps away in the app.</p>
+      <p>Tester email addresses sit outside both: we hold one for as long as you are a tester, and delete it when you ask. More detail on all of this is in the privacy notice — <a href="/privacy/#bug-reports">bug reports</a>, <a href="/privacy/#recordings">contributed recordings</a> and <a href="/privacy/#testing">the testing programme</a>.</p>
     </section>
   </article>
 </Base>

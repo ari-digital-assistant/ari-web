@@ -85,10 +85,24 @@ describe('the site stops contradicting itself about what is held', () => {
     expect(privacy).toContain('If you apply to be a tester');
   });
 
-  it('delete-data no longer claims a bug report is the only thing held', () => {
+  it('privacy has the recordings section delete-data links to', () => {
+    const privacy = readFileSync(new URL('../dist/privacy/index.html', import.meta.url), 'utf8');
+    expect(privacy).toContain('id="recordings"');
+    expect(privacy).toContain('If you contribute recordings');
+  });
+
+  it('delete-data names every one of the three things held', () => {
     const dd = readFileSync(new URL('../dist/delete-data/index.html', import.meta.url), 'utf8');
-    expect(dd).toContain('At most two things');
+    expect(dd).toContain('At most three things');
+    expect(dd).toContain('Contributed recordings');
     expect(dd).toContain('If you applied to be a tester');
+    expect(dd).toContain('/privacy/#recordings');
     expect(dd).toContain('/privacy/#testing');
+  });
+
+  it('delete-data does not put the bug reports clock on the recordings', () => {
+    const dd = readFileSync(new URL('../dist/delete-data/index.html', import.meta.url), 'utf8');
+    expect(dd).toContain('Bug reports: 90 days');
+    expect(dd).toContain('Contributed recordings: kept until you ask');
   });
 });

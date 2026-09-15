@@ -8,6 +8,7 @@ FUNCTION="${FUNCTION:-heyari-rewrite}"     # CloudFront Function (cf-rewrite.js)
 REPORT_FN="${REPORT_FN:-heyari-report}"    # /api/report Lambda (functions/report)
 BUGREPORT_FN="${BUGREPORT_FN:-heyari-bugreport}"  # /api/bug Lambda (functions/bugreport)
 TESTER_FN="${TESTER_FN:-heyari-tester}"        # /api/tester Lambda (functions/tester)
+CONTRIB_FN="${CONTRIB_FN:-heyari-contrib}"     # /api/contrib Lambda (functions/contrib)
 REGION="eu-west-2"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
@@ -119,6 +120,20 @@ if aws lambda get-function --function-name "$TESTER_FN" --region "$REGION" >/dev
   echo "Shipped $TESTER_FN."
 else
   echo "No $TESTER_FN function in $REGION — skipping (run infra/provision-tester-api.sh)."
+fi
+
+# 8) The /api/contrib Lambda. Same reasoning as steps 5 to 7 — infra is owned
+#    by infra/provision-contrib-api.sh, this only ships code onto a function
+#    that already exists.
+if aws lambda get-function --function-name "$CONTRIB_FN" --region "$REGION" >/dev/null 2>&1; then
+  ZIP="$("$HERE/scripts/package-contrib-fn.mjs")"
+  aws lambda update-function-code --function-name "$CONTRIB_FN" --region "$REGION" \
+    --zip-file "fileb://$ZIP" >/dev/null
+  aws lambda wait function-updated-v2 --function-name "$CONTRIB_FN" --region "$REGION"
+  rm -f "$ZIP"
+  echo "Shipped $CONTRIB_FN handler code."
+else
+  echo "No $CONTRIB_FN function in $REGION — skipping (run infra/provision-contrib-api.sh)."
 fi
 
 aws cloudfront create-invalidation --distribution-id "$DIST_ID" --paths '/*' >/dev/null

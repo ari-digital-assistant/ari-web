@@ -1,9 +1,9 @@
 # ari-web
 
 Static hosting for **heyari.dev** — the marketing site, the skills browser, the
-documentation, and the Ari OAuth / Android App-Link surface. Three small Lambdas
-sit behind `/api/*` for bug reports and tester signup; everything else is files
-on S3.
+documentation, and the Ari OAuth / Android App-Link surface. Four small Lambdas
+sit behind `/api/*` for bug reports, tester signup and contributed recordings;
+everything else is files on S3.
 
 ## Layout
 - `site/` — Astro marketing site and skills browser (`/`, `/skills`,
@@ -17,7 +17,8 @@ on S3.
 - `docs/` — VitePress documentation, served at `/docs`.
 - `functions/` — the `/api/*` Lambdas: `report` (maintainer reports),
   `bugreport` (the in-app bug reporter), `tester` (Play internal-testing
-  signup). `deploy.sh` updates their code; it never creates them.
+  signup), `contrib` (recordings a user chose to contribute). `deploy.sh`
+  updates their code; it never creates them.
 - `infra/` — one-off provisioning and rollback scripts, plus dated distribution
   backups. Run by hand, never by CI.
 - `cf-rewrite.js` — CloudFront **Function**: appends `index.html` to directory
@@ -59,9 +60,16 @@ BUCKET=heyari-dev-static DIST_ID=E3DZC8ECXAT4FZ ./deploy.sh
 ## Infra
 Private S3 (`eu-west-2`) → CloudFront (HTTPS, OAC) → apex `heyari.dev` via
 Route53; ACM cert in `us-east-1`. Everything under `/docs`, `/skills` and the
-marketing pages is prerendered and static. The only compute is the three
+marketing pages is prerendered and static. The only compute is the four
 `/api/*` Lambdas in `eu-west-2`, created by the `infra/provision-*-api.sh`
 scripts — CI only ever updates code on infrastructure that already exists.
+
+Contributed recordings live in their own bucket (`heyari-contributions`), not
+alongside the bug reports. That bucket expires everything at 90 days, which is
+the promise its consent text makes; a training corpus that evaporates is no use
+to anyone. One bucket could not honour both, and a lifecycle rule is far too
+quiet a thing to get wrong. The contributions bucket also has versioning
+suspended on purpose, so "delete my shared data" really does delete.
 Design + runbook: `../docs/superpowers/specs/2026-07-24-heyari-dev-website-design.md`.
 
 URL routing is the `heyari-rewrite` CloudFront Function, sourced from

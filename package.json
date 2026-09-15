@@ -10,6 +10,7 @@
     "docs",
     "functions/report",
     "functions/bugreport",
+    "functions/contrib",
     "functions/tester"
   ],
   "scripts": {
