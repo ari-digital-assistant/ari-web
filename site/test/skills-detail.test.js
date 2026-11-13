@@ -53,9 +53,13 @@ describe('prerendered skill page', () => {
     expect(page).toContain(`<link rel="canonical" href="${url}">`);
     expect(meta(page, 'property', 'og:url')).toBe(url);
   });
-  it('unfurls with the skill first screenshot, served off our own mirror', () => {
-    const image = meta(page, 'property', 'og:image');
-    expect(image).toMatch(/^https:\/\/heyari\.dev\/registry\/screenshots\//);
+  it('unfurls with its own card, not a raw portrait screenshot', () => {
+    // A 1080x2364 screenshot as og:image got cropped to a thin strip by every
+    // large-card unfurler. The card puts it in a phone at 1200x630 instead.
+    expect(meta(page, 'property', 'og:image')).toBe(`https://heyari.dev/og/skills/${skill.id}.jpg`);
+    expect(meta(page, 'property', 'og:image:width')).toBe('1200');
+    expect(meta(page, 'property', 'og:image:height')).toBe('630');
+    expect(meta(page, 'property', 'og:image:alt')).toContain(niceName(skill.name));
     expect(meta(page, 'name', 'twitter:card')).toBe('summary_large_image');
   });
   it('renders the whole detail view server-side, so it reads with JS off', () => {

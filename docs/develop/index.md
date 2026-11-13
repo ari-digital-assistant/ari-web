@@ -1,3 +1,7 @@
+---
+description: "Write a skill for Ari: declarative, WASM or assistant, validated and shipped through the open registry."
+---
+
 # Develop for Ari
 
 Anyone can add a skill to Ari. There's no gatekeeping beyond a review and an

@@ -1,3 +1,7 @@
+---
+description: "Everything Ari can do is a skill: where they come from, which ones use the network, and how to set them up."
+---
+
 # Skills
 
 Everything Ari can do — beyond the basics — is a skill. Weather, timers,

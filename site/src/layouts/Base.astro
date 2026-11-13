@@ -2,7 +2,35 @@
 import '../styles/global.css';
 import Nav from '../components/Nav.astro';
 import Footer from '../components/Footer.astro';
-const { title, description = 'The open-source assistant that never phones home.' } = Astro.props;
+
+// Link previews. Every page unfurls in Slack, Discord, iMessage, WhatsApp, X
+// and the rest from the tags below; a page only has to say what differs.
+//
+//   image  — root-relative or absolute, with imageAlt, imageWidth and
+//            imageHeight when known. Defaults to the brand card, rendered from
+//            scripts/og/card.html by scripts/render-og.sh.
+//   url    — the canonical URL. Defaults to this page's path in its shared,
+//            slash-less form (the one the sitemap advertises). Pass null on a
+//            page that is served at URLs other than its own path — the 404,
+//            the /skills/detail fallback — so it never claims to be one URL
+//            when an unfurler fetched it as another.
+const DEFAULT_IMAGE = { src: '/og/ari.jpg', width: 1200, height: 630, alt: 'Ari — the assistant that never phones home. Open-source, on-device, yours.' };
+const {
+  title,
+  description = 'The open-source assistant that never phones home.',
+  image,
+  imageAlt,
+  imageWidth,
+  imageHeight,
+  url = Astro.url.pathname,
+} = Astro.props;
+
+const abs = (p) => new URL(p, Astro.site).href;
+const path = url && new URL(url, Astro.site).pathname;
+const canonical = path && abs(path === '/' ? path : path.replace(/\/$/, ''));
+const og = image
+  ? { src: abs(image), alt: imageAlt, width: imageWidth, height: imageHeight }
+  : { ...DEFAULT_IMAGE, src: abs(DEFAULT_IMAGE.src) };
 ---
 <!doctype html>
 <html lang="en">
@@ -12,6 +40,24 @@ const { title, description = 'The open-source assistant that never phones home.'
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="icon" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="theme-color" content="#D8431C" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Ari" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:image" content={og.src} />
+    {og.width && <meta property="og:image:width" content={String(og.width)} />}
+    {og.height && <meta property="og:image:height" content={String(og.height)} />}
+    {og.alt && <meta property="og:image:alt" content={og.alt} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={og.src} />
+    {og.alt && <meta name="twitter:image:alt" content={og.alt} />}
     <slot name="head" />
   </head>
   <body>

@@ -2,7 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import SkillDetail from '../../components/SkillDetail.astro';
 import { registrySkills } from '../../lib/registry.js';
-import { niceName, metaDescription, screenshotPlatforms, screenshotUrls } from '../../lib/skills.js';
+import { niceName, metaDescription, screenshotPlatforms } from '../../lib/skills.js';
 
 // One real page per skill in the registry at build time. Before this, every
 // /skills/<id> was the same client-rendered template, so crawlers and social
@@ -15,22 +15,13 @@ export async function getStaticPaths() {
 const { skill } = Astro.props;
 const title = `${niceName(skill.name)} — Ari skill`;
 const description = metaDescription(skill);
-const canonical = new URL(`/skills/${skill.id}`, Astro.site).href;
-// The first screenshot doubles as the unfurl card, served off our own mirror so
-// even the unfurler never touches GitHub. Absolute, because og:image must be.
-const platforms = screenshotPlatforms(skill);
-const image = platforms.length ? new URL(screenshotUrls(skill, platforms[0])[0], Astro.site).href : '';
+// The unfurl card is built per skill by /og/skills/[id].jpg.js: its first
+// screenshot in a phone on the brand background. A skill with no screenshots
+// gets no card of its own and unfurls with the site's.
+const card = screenshotPlatforms(skill).length
+  ? { image: `/og/skills/${skill.id}.jpg`, imageWidth: 1200, imageHeight: 630, imageAlt: `${niceName(skill.name)}, a skill for Ari, running on a phone` }
+  : {};
 ---
-<Base title={title} description={description}>
-  <Fragment slot="head">
-    <link rel="canonical" href={canonical} />
-    <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Ari" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
-    {image && <meta property="og:image" content={image} />}
-    <meta name="twitter:card" content={image ? 'summary_large_image' : 'summary'} />
-  </Fragment>
+<Base title={title} description={description} {...card}>
   <SkillDetail skill={skill} />
 </Base>

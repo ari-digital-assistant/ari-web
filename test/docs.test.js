@@ -49,6 +49,38 @@ describe('develop section', () => {
   });
 });
 
+describe('docs link previews', () => {
+  const meta = (html, attr, name) => {
+    const m = html.match(new RegExp(`<meta ${attr}="${name}" content="([^"]*)"`));
+    return m ? m[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&') : null;
+  };
+
+  it('titles and describes each page as itself, with the shared card', () => {
+    const h = read('using/wake-word.html');
+    expect(meta(h, 'property', 'og:title')).toBe('The wake word | Ari Docs');
+    expect(meta(h, 'property', 'og:description')).toMatch(/Hey Ari/);
+    expect(meta(h, 'property', 'og:description')).toBe(meta(h, 'name', 'description'));
+    expect(meta(h, 'property', 'og:image')).toBe('https://heyari.dev/og/ari.jpg');
+    expect(meta(h, 'name', 'twitter:card')).toBe('summary_large_image');
+  });
+
+  it('names pages by the URL cf-rewrite serves them at', () => {
+    expect(meta(read('using/wake-word.html'), 'property', 'og:url')).toBe('https://heyari.dev/docs/using/wake-word');
+    expect(meta(read('develop/index.html'), 'property', 'og:url')).toBe('https://heyari.dev/docs/develop/');
+    expect(meta(read('index.html'), 'property', 'og:url')).toBe('https://heyari.dev/docs/');
+    expect(read('using/wake-word.html')).toContain('<link rel="canonical" href="https://heyari.dev/docs/using/wake-word">');
+  });
+
+  it('gives every page its own description rather than the site default', () => {
+    const fallback = 'Documentation for Ari — the open-source, on-device assistant.';
+    for (const p of ['using/getting-started', 'using/wake-word', 'using/skills', 'using/privacy', 'develop/index', 'develop/first-skill']) {
+      const d = meta(read(`${p}.html`), 'property', 'og:description');
+      expect(d, p).toBeTruthy();
+      expect(d, p).not.toBe(fallback);
+    }
+  });
+});
+
 describe('pretty docs URLs', () => {
   // cleanUrls links pages without .html but VitePress still writes flat .html
   // files, so the routing rule and the build output have to agree exactly.

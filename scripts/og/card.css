@@ -1,0 +1,30 @@
+/* Shared by the link-preview card sources in this directory. */
+@font-face{
+  font-family:"Manrope";
+  src:url("../../site/src/assets/manrope.woff2") format("woff2");
+  font-weight:200 800;
+}
+*{margin:0; padding:0; box-sizing:border-box}
+html,body{width:1200px; height:630px; overflow:hidden}
+body{
+  font-family:"Manrope",system-ui,sans-serif; color:#F6EDE1; background:#150D14;
+  position:relative; -webkit-font-smoothing:antialiased;
+}
+.glow{position:absolute; border-radius:50%; filter:blur(90px)}
+.g1{width:620px; height:620px; right:-120px; top:-40px; background:rgba(247,62,30,.38)}
+.g2{width:420px; height:420px; right:160px; bottom:-220px; background:rgba(252,167,46,.26)}
+.g3{width:520px; height:360px; left:-220px; top:-200px; background:rgba(90,40,72,.55)}
+.grain{position:absolute; inset:0; background:
+  radial-gradient(circle at 78% 46%, rgba(255,255,255,.05), transparent 55%)}
+.copy{position:absolute; left:84px; top:78px; bottom:72px; width:640px;
+  display:flex; flex-direction:column}
+.lockup{display:flex; align-items:center; gap:16px; font-size:40px; font-weight:800; letter-spacing:-.02em}
+.lockup svg{width:52px; height:52px}
+h1{margin-top:auto; font-size:74px; line-height:1.02; font-weight:800; letter-spacing:-.035em}
+.grad{background:linear-gradient(120deg,#F73E1E,#FD6A21 45%,#FCA72E);
+  -webkit-background-clip:text; background-clip:text; color:transparent}
+.tag{margin-top:28px; display:flex; gap:14px; align-items:center;
+  font-size:26px; font-weight:600; color:#C9B5B9}
+.tag i{width:7px; height:7px; border-radius:50%; background:#FD6A21; display:block}
+.url{margin-top:auto; padding-top:40px; font-family:ui-monospace,"JetBrains Mono",Menlo,monospace;
+  font-size:24px; color:#AC969C; letter-spacing:.02em}

@@ -5,7 +5,7 @@ import SkillDetail from '../../components/SkillDetail.astro';
 <!-- The client-rendered fallback. cf-rewrite sends /skills/<id> here only for
      ids with no prerendered page yet — i.e. skills published since the last
      site build. Everything else gets a real page from [id].astro. -->
-<Base title="Skill — Ari" description="An Ari skill. Signed, open, and installable from inside the app.">
+<Base title="Skill — Ari" description="An Ari skill. Signed, open, and installable from inside the app." url={null}>
   <Fragment slot="head"><meta name="robots" content="noindex" /></Fragment>
   <SkillDetail />
 </Base>

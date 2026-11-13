@@ -85,11 +85,11 @@ describe('mirrored screenshots', () => {
     }
   });
 
-  it('unfurls off the mirror too, with an absolute URL as og:image requires', () => {
+  it('unfurls off our own origin too, with an absolute URL as og:image requires', () => {
     const withShots = mirror.skills.find((s) => Object.keys(s.screenshots || {}).length);
     const page = readFileSync(new URL(`./skills/${withShots.id}/index.html`, dist), 'utf8');
     const image = page.match(/<meta property="og:image" content="([^"]*)"/)[1];
-    expect(image.startsWith('https://heyari.dev/registry/screenshots/'), image).toBe(true);
+    expect(image.startsWith('https://heyari.dev/'), image).toBe(true);
     expect(existsSync(new URL(`.${image.replace('https://heyari.dev', '')}`, dist))).toBe(true);
   });
 });

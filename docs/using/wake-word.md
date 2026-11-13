@@ -1,3 +1,7 @@
+---
+description: "How \"Hey Ari\" works: on-device wake word detection, the lock screen, and \"Let's talk\" mode."
+---
+
 # The wake word
 
 Say "Hey Ari" — the default wake word — and Ari wakes up, hands-free. "Ok

@@ -1,3 +1,7 @@
+---
+description: "The smallest useful Ari skill: one declarative manifest, no code required."
+---
+
 # Your first skill
 
 Here's the shape of the smallest useful skill — a declarative one, no code

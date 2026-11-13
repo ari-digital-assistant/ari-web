@@ -56,6 +56,12 @@ export const platformFromUserAgent = (ua = '', maxTouchPoints = 0) => {
 /** The platform tab to open on: the visitor's own if we have shots for it. */
 export const preferredPlatform = (platforms, hint) => (platforms.includes(hint) ? hint : platforms[0] || '');
 
+/**
+ * The platform whose first screenshot goes on the skill's link-preview card.
+ * Android when there is one, since the card draws a phone around it.
+ */
+export const ogPlatform = (s) => preferredPlatform(screenshotPlatforms(s), 'android');
+
 export const isNet = (s) => s.type === 'assistant' || (s.capabilities || []).some((c) => NET_CAPS.has(c));
 
 export const niceName = (name) => (name || '').replace(/-/g, ' ').replace(/\b\w/g, (m) => m.toUpperCase());

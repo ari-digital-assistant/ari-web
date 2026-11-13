@@ -27,6 +27,12 @@ everything else is files on S3.
   traffic.
 - `scripts/assemble.mjs` — merges site + docs builds into `dist/` and injects
   the prerendered skill ids and docs directories into `build/cf-rewrite.js`.
+- `scripts/render-og.sh` — renders the link-preview images from the HTML in
+  `scripts/og/` with headless Chrome: the brand card (`site/public/og/ari.jpg`),
+  the skill-card background (`site/src/assets/og/skill-card.png`) and the
+  apple-touch-icon. Run by hand when one changes, and commit the output. Each
+  skill's own card (`/og/skills/<id>.jpg`) is built from that background plus
+  its first screenshot by `site/src/pages/og/skills/[id].jpg.js`, every build.
 - `deploy.sh` — builds, assembles, `aws s3 sync`, publishes `cf-rewrite.js`,
   updates the Lambdas, invalidates CloudFront.
 - `buildspec.yml` — the CodeBuild pipeline that runs all of the above.

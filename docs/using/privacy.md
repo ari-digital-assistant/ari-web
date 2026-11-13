@@ -1,3 +1,7 @@
+---
+description: "What Ari does on your device, what leaves it, and only when you say so."
+---
+
 # Privacy & your data
 
 Here's the short version: Ari does its thinking on your device, and when

@@ -1,3 +1,7 @@
+---
+description: "Install Ari on Android, get through first run, and start talking to it."
+---
+
 # Getting started
 
 Ari is an open-source, on-device digital assistant. Today that means Android
