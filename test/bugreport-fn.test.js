@@ -185,6 +185,30 @@ describe('the public issue', () => {
     expect(body).toContain('Battery optimisation exempt: yes');
   });
 
+  it('carries the chip, CPU features and the assistant CPU build', () => {
+    const { report } = validate({
+      ...good(),
+      setup: { assistant: 'dev.heyari.assistant.local', model: 'gemma4-e2b-q4', modelCpu: 'ARMv8.6 (dot product)' },
+      device: {
+        model: 'Google Pixel 10 Pro Fold',
+        androidVersion: '17',
+        chip: 'Google Tensor G5',
+        cpuFeatures: ['dot product', 'int8 matrix multiply'],
+      },
+    });
+    const body = issueBody(report, 'r_abc', filed, base);
+    expect(body).toContain('(gemma4-e2b-q4) · CPU build ARMv8.6 (dot product)');
+    expect(body).toContain('Google Pixel 10 Pro Fold · Google Tensor G5 · Android 17');
+    expect(body).toContain('CPU features: dot product, int8 matrix multiply');
+  });
+
+  it('leaves the CPU lines out for an app too old to send them', () => {
+    const { report } = validate(good());
+    const body = issueBody(report, 'r_abc', filed, base);
+    expect(body).toContain('Pixel 8 · Android 16');
+    expect(body).not.toContain('CPU');
+  });
+
   it('says when battery state is unknown rather than implying no', () => {
     const { report } = validate(good());
     expect(issueBody(report, 'r_abc', filed, base)).toContain('Battery optimisation exempt: unknown');

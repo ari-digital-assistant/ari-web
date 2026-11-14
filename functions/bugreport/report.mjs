@@ -38,6 +38,7 @@ export const LIMITS = {
   bytesPerInstallPerDay: 60 * 1024 * 1024,
   skills: 64,
   permissions: 32,
+  cpuFeatures: 16,
 };
 
 // Personal data is deleted at 90 days. The GitHub issue is not: it is the
@@ -114,6 +115,14 @@ export function validate(raw) {
     .map((p) => str(p, 64))
     .filter(Boolean);
 
+  // What the processor can do, next to which llama.cpp build the assistant
+  // chose for it (setup.modelCpu): the pair explains a slow or crashing
+  // on-device assistant (ari-android#32).
+  const cpuFeatures = (Array.isArray(raw.device.cpuFeatures) ? raw.device.cpuFeatures : [])
+    .slice(0, LIMITS.cpuFeatures)
+    .map((f) => str(f, 32))
+    .filter(Boolean);
+
   return {
     ok: true,
     report: {
@@ -133,6 +142,7 @@ export function validate(raw) {
       setup: {
         assistant: str(raw.setup?.assistant, 32) || null,
         model: str(raw.setup?.model, 64) || null,
+        modelCpu: str(raw.setup?.modelCpu, 128) || null,
         stt: str(raw.setup?.stt, 64) || null,
         tts: str(raw.setup?.tts, 64) || null,
         wake: str(raw.setup?.wake, 64) || null,
@@ -140,6 +150,8 @@ export function validate(raw) {
       device: {
         model,
         androidVersion,
+        chip: str(device.chip, 64) || null,
+        cpuFeatures,
         fingerprint: str(device.fingerprint, 200) || null,
         ramFreeMb: num(device.ramFreeMb),
         storageFreeMb: num(device.storageFreeMb),
@@ -235,15 +247,17 @@ export function issueBody(report, reportId, filedAt, reportsBaseUrl) {
       `${app.locale ? ` · locale ${app.locale}` : ''}`,
     '',
     '### Setup',
-    `Assistant: ${orDash(setup.assistant)}${setup.model ? ` (${setup.model})` : ''}`,
+    `Assistant: ${orDash(setup.assistant)}${setup.model ? ` (${setup.model})` : ''}` +
+      `${setup.modelCpu ? ` · CPU build ${setup.modelCpu}` : ''}`,
     `STT: ${orDash(setup.stt)} · TTS: ${orDash(setup.tts)} · Wake: ${orDash(setup.wake)}`,
     `Skills: ${skills}`,
     '',
     '### Device',
-    `${device.model} · Android ${device.androidVersion}`,
+    `${device.model}${device.chip ? ` · ${device.chip}` : ''} · Android ${device.androidVersion}`,
     device.fingerprint,
     `RAM free ${orDash(device.ramFreeMb)} MB · storage free ${orDash(device.storageFreeMb)} MB` +
       `${device.network ? ` · ${device.network}` : ''}`,
+    device.cpuFeatures.length ? `CPU features: ${device.cpuFeatures.join(', ')}` : null,
     `Battery optimisation exempt: ${yesNo(device.batteryExempt)}`,
     `Permissions: ${device.permissions.length ? device.permissions.join(', ') : 'none granted'}`,
   ].filter((l) => l !== null);
