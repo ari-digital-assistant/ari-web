@@ -107,6 +107,18 @@ and OAC if pages that should exist start 404ing en masse. And `/docs/*` errors
 get this page too, not VitePress's own 404, since error responses are
 distribution-wide and cannot vary per path.
 
+**On-device models** (`/models/*`) come from their own bucket,
+`heyari-models`, through a second S3 origin with its own OAC
+(`heyari-models-oac`), the CachingOptimized policy and no rewrite function.
+They can't live in `heyari-dev-static`, because `deploy.sh` syncs that bucket
+with `--delete` and would wipe anything it didn't build. Nothing here writes
+to it: ari-tools' `publish-llm-manifests` workflow mirrors each GGUF from
+Hugging Face as the IAM role `ari-tools-model-publisher` (OIDC, ari-tools
+`main` only), keyed by its SHA-256, so an object never changes once written.
+The app finds the URL in the manifest, so moving the files means changing the
+publisher, not shipping an app. This is distribution config, set once, like
+the error responses above; a missing model gets the 404 page too.
+
 ## Fingerprints (assetlinks.json)
 
 `sha256_cert_fingerprints` carries one entry per signing certificate Ari ships
