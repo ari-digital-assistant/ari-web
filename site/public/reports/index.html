@@ -269,10 +269,19 @@
     }
   }
 
+  // /reports/<id> is the link the bug bot writes into each issue. Sign-in
+  // always lands back on /reports/, so a signed-out visitor's id is parked in
+  // the tab's sessionStorage and picked up on the way back.
+  const PENDING_KEY = 'ari_reports_pending';
+  const linked = /^\/reports\/([^/.]+)\/?$/.exec(location.pathname)?.[1] ?? null;
+
   (async function start() {
     try {
       const data = await api('/api/bug/reports');
-      if (data.signedOut) return renderSignedOut();
+      if (data.signedOut) {
+        if (linked) sessionStorage.setItem(PENDING_KEY, linked);
+        return renderSignedOut();
+      }
       show('who', true);
       const count = data.reports.length;
       el('who').textContent = `${count} report${count === 1 ? '' : 's'} · `;
@@ -281,6 +290,9 @@
       out.textContent = 'sign out';
       el('who').appendChild(out);
       renderList(data.reports);
+      const pending = linked ?? sessionStorage.getItem(PENDING_KEY);
+      sessionStorage.removeItem(PENDING_KEY);
+      if (pending) await openReport(pending);
     } catch (err) {
       show('error', true);
       el('error').textContent = `Could not load reports: ${err.message}`;

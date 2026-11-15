@@ -12,3 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bug reports keep and show the device's chip, its CPU features, and which processor
   build the on-device assistant runs
   ([ari-android#32](https://github.com/ari-digital-assistant/ari-android/issues/32)).
+
+### Fixed
+
+- The report link in each bug-report issue (`/reports/<id>`) opens that report instead
+  of an error page, and still opens it after signing in
+  ([ari-android#35](https://github.com/ari-digital-assistant/ari-android/issues/35)).

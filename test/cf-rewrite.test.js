@@ -31,6 +31,15 @@ describe('cf-rewrite CloudFront Function', () => {
     expect(run('/skills/detail/index.html')).toBe('/skills/detail/index.html');
     expect(run('/skills/detail/')).toBe('/skills/detail/index.html');
   });
+  it('serves a report deep-link from the reports page', () => {
+    expect(run('/reports/r_b630e0082455f113995985b1')).toBe('/reports/index.html');
+    expect(run('/reports/r_b630e0082455f113995985b1/')).toBe('/reports/index.html');
+  });
+  it('still serves the reports page itself', () => {
+    expect(run('/reports')).toBe('/reports/index.html');
+    expect(run('/reports/')).toBe('/reports/index.html');
+    expect(run('/reports/index.html')).toBe('/reports/index.html');
+  });
   it('appends index.html for directory-style routes', () => {
     expect(run('/')).toBe('/index.html');
     expect(run('/features')).toBe('/features/index.html');

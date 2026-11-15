@@ -40,6 +40,19 @@ function handler(event) {
         }
     }
 
+    // Report deep-links, which the bug bot writes into every issue it files.
+    // There is one hand-written page; it reads the id from the path. Without
+    // this the directory rule below asks the bucket for
+    // /reports/<id>/index.html, which doesn't exist.
+    if (uri.indexOf('/reports/') === 0) {
+        var id = uri.slice(9); // strip "/reports/"
+        if (id.endsWith('/')) id = id.slice(0, -1);
+        if (id !== '' && id.indexOf('/') === -1 && id.indexOf('.') === -1) {
+            req.uri = '/reports/index.html';
+            return req;
+        }
+    }
+
     // VitePress `cleanUrls` links pages without an extension but still emits
     // FLAT files (using/getting-started.html, not using/getting-started/
     // index.html), so the directory heuristic below would send every docs page
