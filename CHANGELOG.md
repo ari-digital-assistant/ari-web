@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   build the on-device assistant runs
   ([ari-android#32](https://github.com/ari-digital-assistant/ari-android/issues/32)).
 
+### Changed
+
+- The deploy's dependency audit can accept a named advisory that has no fix yet. It
+  accepts picomatch's GHSA-fc5q-39xc-vjpf, which only touches build-time globbing,
+  and stops accepting it by itself once a fixed release exists.
+
 ### Fixed
 
 - The report link in each bug-report issue (`/reports/<id>`) opens that report instead

@@ -18,7 +18,7 @@
     "build": "npm run build --workspace site && npm run build --workspace docs",
     "assemble": "node scripts/assemble.mjs",
     "test": "vitest run",
-    "audit": "npm audit --omit=dev --audit-level=high"
+    "audit": "node scripts/audit.mjs"
   },
   "devDependencies": {
     "vitest": "^3.2.4"

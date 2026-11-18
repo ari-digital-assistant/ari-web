@@ -40,7 +40,7 @@ phases:
   pre_build:
     commands:
       # Gate — must pass before anything is published.
-      - npm run audit          # fails on high+ vulnerabilities (--omit=dev)
+      - npm run audit          # fails on high+ vulnerabilities (--omit=dev), bar scripts/audit.mjs exceptions
       - npm test               # site + docs + cf-rewrite + assemble suites
   build:
     commands:
