@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `POST /api/bug/<id>/status` tells the app how many people have replied on a report's
+  issue, so it can let the tester know. It asks for the report's delete token, as
+  withdrawing does, and leaves bots' comments out of the count.
+
 - Bug reports keep and show the device's chip, its CPU features, and which processor
   build the on-device assistant runs
   ([ari-android#32](https://github.com/ari-digital-assistant/ari-android/issues/32)).

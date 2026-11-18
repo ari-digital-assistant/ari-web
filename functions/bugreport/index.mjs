@@ -33,6 +33,7 @@ import {
   issueTitle,
   issueBody,
   redactedBody,
+  replyCount,
   route,
   originSecretOk,
 } from './report.mjs';
@@ -312,6 +313,26 @@ async function deleteReport(id, token) {
   return reply(204);
 }
 
+/**
+ * How many replies a report's issue has, for the app to notice new ones.
+ *
+ * Asks for the delete token, like delete does, though the issue is public:
+ * without it anyone could spend the App's GitHub rate limit through us. The
+ * first hundred comments are counted, which no report is going to outgrow.
+ */
+async function reportStatus(id, token) {
+  const item = await loadReport(id);
+  if (!item || !token || hashToken(token) !== item.deleteTokenHash) {
+    return errorReply(404, 'no such report');
+  }
+  if (!item.issueNumber) return reply(200, { replies: 0 });
+
+  const creds = await githubCredentials();
+  const ghToken = await installationToken(creds);
+  const comments = await issueComments(ghToken, REPO, item.issueNumber, 100);
+  return reply(200, { replies: replyCount(comments) });
+}
+
 /** A browser redirect, with any cookies the step needs to set. */
 const redirect = (location, cookies = []) => ({
   statusCode: 302,
@@ -490,6 +511,7 @@ export const handler = async (event) => {
   try {
     if (target.action === 'create') return await createReport(body);
     if (target.action === 'finalise') return await finaliseReport(target.id);
+    if (target.action === 'status') return await reportStatus(target.id, body?.deleteToken);
     return await deleteReport(target.id, body?.deleteToken);
   } catch (err) {
     // Nothing useful to the caller, but a trace in CloudWatch — a silent

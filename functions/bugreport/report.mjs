@@ -311,7 +311,17 @@ export function redactedBody(reportId, deletedAt, hadReplies) {
 }
 
 /**
- * `/api/bug`, `/api/bug/<id>/finalise`, `/api/bug/<id>/delete`, or null.
+ * How many people have replied on a report's issue.
+ *
+ * Bots don't count: the app tells a reporter when someone answers them, and a
+ * bot's comment (ari-bugbot's own, or any automation added later) is not that.
+ */
+export const replyCount = (comments) =>
+  comments.filter((c) => c?.user?.type !== 'Bot').length;
+
+/**
+ * `/api/bug`, `/api/bug/<id>/finalise`, `/api/bug/<id>/delete`,
+ * `/api/bug/<id>/status`, or null.
  *
  * Lives here rather than beside the handler so the tests can exercise routing
  * without loading the AWS SDK.
@@ -322,7 +332,7 @@ export function route(path) {
 
   // Reporter endpoints: POST, unauthenticated, from the app.
   if (parts.length === 2) return { action: 'create', method: 'POST' };
-  if (parts.length === 4 && (parts[3] === 'finalise' || parts[3] === 'delete')) {
+  if (parts.length === 4 && ['finalise', 'delete', 'status'].includes(parts[3])) {
     return { action: parts[3], id: parts[2], method: 'POST' };
   }
 

@@ -78,5 +78,5 @@ export const createIssue = (token, repo, { title, body, labels }) =>
 export const updateIssue = (token, repo, number, fields) =>
   call(`/repos/${repo}/issues/${number}`, { token, method: 'PATCH', body: fields });
 
-export const issueComments = (token, repo, number) =>
-  call(`/repos/${repo}/issues/${number}/comments?per_page=1`, { token });
+export const issueComments = (token, repo, number, perPage = 1) =>
+  call(`/repos/${repo}/issues/${number}/comments?per_page=${perPage}`, { token });

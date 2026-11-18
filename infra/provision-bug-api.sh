@@ -270,6 +270,7 @@ fi
 # Explicit routes beat the API's $default, which is what keeps /api/report on
 # the other function while these three come here.
 for ROUTE in "POST /api/bug" "POST /api/bug/{id}/finalise" "POST /api/bug/{id}/delete" \
+             "POST /api/bug/{id}/status" \
              "GET /api/bug/auth/start" "GET /api/bug/auth/callback" "GET /api/bug/auth/logout" \
              "GET /api/bug/reports" "GET /api/bug/reports/{id}"; do
   EXISTING="$(aws apigatewayv2 get-routes --api-id "$API_ID" --region "$REGION" \
@@ -299,6 +300,7 @@ cat <<NOTE
   POST https://heyari.dev/api/bug
   POST https://heyari.dev/api/bug/<id>/finalise
   POST https://heyari.dev/api/bug/<id>/delete
+  POST https://heyari.dev/api/bug/<id>/status
   GET  https://heyari.dev/api/bug/auth/start      (maintainer sign-in)
   GET  https://heyari.dev/api/bug/auth/callback
   GET  https://heyari.dev/api/bug/auth/logout

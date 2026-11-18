@@ -5,6 +5,7 @@ import {
   issueTitle,
   issueBody,
   redactedBody,
+  replyCount,
   objectKey,
   hashToken,
   newReportId,
@@ -289,14 +290,31 @@ describe('identifiers and keys', () => {
   });
 });
 
+describe('reply count', () => {
+  const person = (login) => ({ user: { login, type: 'User' } });
+  const bot = (login) => ({ user: { login, type: 'Bot' } });
+
+  it('counts people and leaves bots out', () => {
+    expect(replyCount([person('keith'), bot('ari-bugbot[bot]'), person('sam')])).toBe(2);
+  });
+
+  it('is zero for no comments or only bots', () => {
+    expect(replyCount([])).toBe(0);
+    expect(replyCount([bot('github-actions[bot]')])).toBe(0);
+  });
+});
+
 describe('routing', () => {
-  it('recognises the three endpoints', () => {
+  it('recognises the reporter endpoints', () => {
     expect(route('/api/bug')).toEqual({ action: 'create', method: 'POST' });
     expect(route('/api/bug/r_abc/finalise')).toEqual({
       action: 'finalise', id: 'r_abc', method: 'POST',
     });
     expect(route('/api/bug/r_abc/delete')).toEqual({
       action: 'delete', id: 'r_abc', method: 'POST',
+    });
+    expect(route('/api/bug/r_abc/status')).toEqual({
+      action: 'status', id: 'r_abc', method: 'POST',
     });
   });
 
