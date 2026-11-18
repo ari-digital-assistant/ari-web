@@ -243,9 +243,10 @@ describe('the public issue', () => {
     expect(body).not.toContain('Home Assistant');
   });
 
-  it('says why the thread survived when people had replied', () => {
-    expect(redactedBody('r_abc', 'now', true)).toContain('left open because others have replied');
-    expect(redactedBody('r_abc', 'now', false)).toContain('Nobody had replied');
+  it('says the replies are kept, and that it is closed either way', () => {
+    expect(redactedBody('r_abc', 'now', true)).toContain('The replies below are kept');
+    expect(redactedBody('r_abc', 'now', true)).toContain('so it is closed');
+    expect(redactedBody('r_abc', 'now', false)).toContain('Nobody had replied, so it is closed');
   });
 });
 

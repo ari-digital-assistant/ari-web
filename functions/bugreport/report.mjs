@@ -291,8 +291,8 @@ export function issueBody(report, reportId, filedAt, reportsBaseUrl) {
  * Always a redaction, never a deletion: GitHub will not let an App delete an
  * issue at all — that needs repository admin, which is a preposterous thing to
  * grant something whose only job is filing bug reports. So the reporter's
- * words go and the shell of the issue stays, closed if nobody engaged with it
- * and open if they did.
+ * words go and the shell of the issue stays, closed, with any replies on it
+ * still readable.
  */
 export function redactedBody(reportId, deletedAt, hadReplies) {
   return [
@@ -302,7 +302,7 @@ export function redactedBody(reportId, deletedAt, hadReplies) {
     'diagnostic files that came with it have been permanently erased.',
     '',
     hadReplies
-      ? 'The thread is left open because others have replied to it.'
+      ? 'The replies below are kept, but with the report gone there is nothing left to act on, so it is closed.'
       : 'Nobody had replied, so it is closed.',
     '',
     '---',

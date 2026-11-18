@@ -297,15 +297,15 @@ async function deleteReport(id, token) {
   if (item.issueNumber) {
     const creds = await githubCredentials();
     const ghToken = await installationToken(creds);
-    // Redacted either way — an App cannot delete an issue, that needs repo
-    // admin. Closed when nobody engaged; left open when they did, because
-    // other people's replies are not the reporter's to bury.
+    // Redacted, since an App cannot delete an issue (that needs repo admin),
+    // and always closed: the report is gone, so there is nothing left to
+    // act on. Replies stay readable on a closed issue, and a maintainer can
+    // reopen it.
     const comments = await issueComments(ghToken, REPO, item.issueNumber);
-    const hadReplies = comments.length > 0;
     await updateIssue(ghToken, REPO, item.issueNumber, {
       title: 'Withdrawn bug report',
-      body: redactedBody(id, new Date().toISOString(), hadReplies),
-      state: hadReplies ? 'open' : 'closed',
+      body: redactedBody(id, new Date().toISOString(), comments.length > 0),
+      state: 'closed',
     });
   }
 

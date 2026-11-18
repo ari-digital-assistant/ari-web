@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Withdrawing a bug report always closes its issue. It used to stay open when anyone had
+  replied, though the report it was about is gone. The replies stay readable on the
+  closed issue.
 - The deploy's dependency audit can accept a named advisory that has no fix yet. It
   accepts picomatch's GHSA-fc5q-39xc-vjpf, which only touches build-time globbing,
   and stops accepting it by itself once a fixed release exists.
